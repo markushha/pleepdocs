@@ -1,0 +1,37 @@
+---
+title: Working Hours
+description: Configuring the AI agent's operating schedule by day of the week
+---
+
+The **Working Hours** extension on the `/extensions` page lets you set the AI agent's operating schedule. Outside working hours, the agent's behavior changes automatically.
+
+## Why configure working hours?
+
+Working hours determine when the AI agent is active and responds to customers in standard mode. Outside working hours, the agent can switch to different behavior — for example, letting the customer know it is currently off-hours.
+
+## Setting up the schedule
+
+In the Working Hours extension, you set the schedule by day of the week:
+
+- For each day, specify the **start time** and **end time** of the working day
+- Mark days as **days off** if the AI agent should not operate in standard mode
+- The timezone is taken from agent settings (`/settings`)
+
+**Example schedule:**
+- Monday through Friday: 09:00 — 20:00
+- Saturday: 10:00 — 16:00
+- Sunday: day off
+
+## Behavior outside working hours
+
+When working hours end, the AI agent automatically switches its behavior. You can configure what happens:
+
+- Send an automatic off-hours message
+- Switch to Operator Mode
+- Other actions defined in agent settings
+
+New customer messages are saved and will be available in the monitoring section.
+
+<Callout title="Tip">
+  If your business operates 24/7, you do not need to enable this extension — the AI agent will respond at any time.
+</Callout>

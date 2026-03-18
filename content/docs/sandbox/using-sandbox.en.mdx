@@ -1,0 +1,58 @@
+---
+title: Using the Sandbox
+description: How to open the sandbox, send test messages, and verify AI agent behavior
+---
+
+The sandbox is your primary tool for testing the AI agent in a safe environment. Here you can verify any scenario without affecting real conversations.
+
+## How to open the sandbox
+
+1. Navigate to the **Sandbox** section in the dashboard sidebar
+2. A chat interface will open, identical to the monitoring section
+
+## Sending test messages
+
+In the sandbox window, you write messages as a customer. The AI agent responds the same way it would in a real conversation. Try different scenarios:
+
+- **Common questions** — questions your customers ask most frequently
+- **Complex requests** — non-standard situations beyond the knowledge base
+- **Edge cases** — requests the AI agent might handle incorrectly
+- **Multimedia** — upload files or images to check how they are processed
+
+## File and image upload
+
+The sandbox supports file and image uploads — just like the real chat. Use this to verify:
+
+- How the AI agent reacts to received images
+- Whether documents are processed correctly
+- Whether file content recognition works properly
+
+## Conversation history
+
+All messages in the sandbox are saved within the test session. You can:
+
+- Review the full test conversation history
+- Analyze the sequence of AI agent responses
+- Check how the context of previous messages affects new responses
+
+## Testing workflow
+
+Recommended testing cycle after making changes:
+
+1. Make changes to the knowledge base, agent settings, or extensions
+2. Open the sandbox
+3. Ask questions related to the changes you made
+4. Evaluate response quality
+5. If needed — make additional corrections through [Improvement](/docs/improvement) and re-test
+
+## Differences from production
+
+The sandbox is fully isolated from production:
+
+- Messages are not sent to real customers
+- Test session data does not affect analytics
+- Actions in the sandbox do not create records in external systems
+
+<Callout title="Tip">
+  Return to the sandbox after every knowledge base or agent settings update. Involve colleagues in testing — a fresh perspective helps uncover issues you might have missed.
+</Callout>

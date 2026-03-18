@@ -1,0 +1,46 @@
+---
+title: Operator Settings (Auto-switch)
+description: Configuring automatic switching between AI Mode and Operator Mode
+---
+
+The **Auto-switch** extension on the `/extensions` page manages automatic switching of conversations between AI Mode and Operator Mode. You define triggers that cause the AI agent to hand off a conversation to an operator, and rules for returning to AI Mode.
+
+## Switching triggers
+
+Configure the conditions under which a conversation automatically switches to Operator Mode:
+
+### Keywords
+
+Specify words and phrases that will cause the AI agent to switch the conversation to an operator. For example:
+
+- "call a manager"
+- "I want to talk to a person"
+- "connect me with an operator"
+
+You can add any number of keywords.
+
+### External channel detection
+
+If the system detects that a message came from a channel requiring manual handling, the conversation automatically switches to Operator Mode.
+
+## Reversion rules
+
+After an operator conversation ends, the conversation can be returned to AI Mode:
+
+- **Automatic reversion** — the conversation returns to AI Mode after a specified time since the operator's last message
+- **Manual reversion** — the operator switches the mode via the toggle button in the monitoring interface
+
+Configure the automatic reversion time so you do not have to remember to switch the mode manually.
+
+## Telegram notifications
+
+In the **Notifications** extension on the `/extensions` page, you can configure Telegram alerts:
+
+- Notification for new messages
+- Notification for help requests (when a customer asks for a human agent)
+
+This allows you to react quickly to mode switches, even when you are not in the dashboard.
+
+<Callout title="Important">
+  Make sure Telegram notifications are configured and working. Without them, you may miss the moment when a customer needs help from a human agent.
+</Callout>

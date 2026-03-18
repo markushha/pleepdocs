@@ -1,0 +1,53 @@
+---
+title: Message Templates
+description: How to create WhatsApp message templates in Pleep and get them approved by Meta for WABA broadcasts
+---
+
+Templates are pre-built messages used for WABA broadcasts via the WhatsApp Business API. Every template must be approved by Meta before it can be used.
+
+## Why are templates required?
+
+WhatsApp requires that all outbound business messages (except replies within a 24-hour window) use approved templates. This protects users from spam and ensures communication quality.
+
+<Callout title="When are templates needed?">
+  Templates are required for **WABA Broadcast** and **WABA Coexistence Broadcast**. Regular WhatsApp Broadcasts do not require templates.
+</Callout>
+
+## Template categories
+
+Meta divides templates into three categories:
+
+- **Marketing** — promotions, discounts, special offers, new product announcements. Used for customer acquisition and retention
+- **Utility** — order notifications, appointment confirmations, status updates. Related to a specific customer action
+- **Authentication** — one-time verification codes and passwords
+
+<Callout title="Please note">
+  The template category affects the cost of sending. Marketing templates are generally more expensive than utility templates.
+</Callout>
+
+## How to create a template in Pleep
+
+1. Go to **Broadcasts** → **Templates**
+2. Click **Create Template**
+3. Enter the template name (Latin characters, no spaces, e.g. `order_confirmation`)
+4. Select a category: marketing, utility, or authentication
+5. Choose the template language
+6. Write the message text, adding variables if needed (`{{1}}`, `{{2}}`)
+7. Add buttons or quick replies if desired
+8. Submit the template for review
+
+## Tips for successful approval
+
+- **Be specific** — clearly describe the purpose of the message. Avoid vague wording
+- **Do not use shortened links** — Meta may reject templates with bit.ly and similar services
+- **Use variables correctly** — a variable should not make up the majority of the message
+- **Follow Meta policies** — do not send content that violates WhatsApp Business rules
+- **Provide examples** — when creating the template, include sample values for variables
+
+## Review timeline
+
+Meta typically reviews templates within a few minutes, but in some cases the review may take up to 24 hours. You will receive a notification when the template is approved or rejected.
+
+<Callout title="Template rejected?">
+  If your template is rejected, check the rejection reason, make adjustments, and resubmit. Common reasons include: overly generic text, missing context, or Meta policy violations.
+</Callout>

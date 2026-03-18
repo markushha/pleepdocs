@@ -1,0 +1,46 @@
+---
+title: Operator Handoff
+description: How Auto-switch works and how to manually switch a conversation from AI Mode to Operator Mode
+---
+
+The Pleep AI agent supports both automatic and manual handoff of conversations to operator mode. The **Auto-switch** feature monitors triggers and switches the mode without your involvement, while you can also switch any conversation manually when needed.
+
+## Auto-switch: automatic switching
+
+Auto-switch is an extension configured on the `/extensions` page. It automatically switches a conversation from AI Mode to Operator Mode when one of the triggers fires.
+
+### Switching triggers
+
+- **Keywords** — if the customer uses specified words or phrases (e.g., "call a manager", "I want to talk to a person")
+- **External channel detection** — if the system determines the message came from a channel requiring manual handling
+- **Custom rules** — you can define your own switching conditions
+
+### Reversion rules
+
+Auto-switch also manages returning the conversation to AI Mode:
+
+- Automatic reversion after a specified time since the operator's last message
+- Manual reversion by the operator via the mode toggle button
+
+## Manual switching
+
+You can switch any conversation to Operator Mode at any time:
+
+1. Open the desired conversation in the monitoring section
+2. Click the mode toggle button
+3. The AI agent will stop sending automatic responses
+4. Start replying to the customer manually
+
+To return to AI Mode, click the toggle button again.
+
+## Notifications
+
+When a conversation switches to Operator Mode (automatically or manually), you can receive a notification via Telegram — this is configured in the **Notifications** extension on the `/extensions` page.
+
+## What the customer sees
+
+When the mode switches, the customer does not see any technical details. The conversation continues in the same chat without interruption. The AI agent can send the customer a message about a specialist being connected, if this is configured in the agent settings.
+
+<Callout title="Important">
+  After finishing a conversation in operator mode, remember to switch the conversation back to AI Mode. If you do not do this manually and auto-switch is not configured for automatic reversion, the AI agent will not respond to new messages from the customer in that conversation.
+</Callout>

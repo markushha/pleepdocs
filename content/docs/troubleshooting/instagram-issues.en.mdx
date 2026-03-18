@@ -1,0 +1,75 @@
+---
+title: Instagram Issues
+description: Troubleshooting Instagram connection problems — business account requirement, Facebook page connection, permission issues.
+---
+
+This section covers the most common Instagram issues and how to resolve them.
+
+## Connection problems
+
+### Instagram won't connect
+
+If you get an error when connecting Instagram:
+
+1. Make sure your Instagram account is a **Business account** or **Creator account**. Personal accounts are not supported.
+2. Verify that your Instagram account is linked to a **Facebook Page**. This is a mandatory requirement of the Instagram API.
+3. Go to **Channels** > **Instagram** and click **Reconnect**.
+4. Authorize via Facebook and grant all requested permissions.
+
+### How to switch to a business account
+
+If you have a personal Instagram account:
+
+1. Open Instagram > **Settings** > **Account**.
+2. Select **Switch to Professional Account**.
+3. Choose **Business**.
+4. Link to a Facebook Page.
+
+### Connection drops intermittently
+
+- Check that you have not revoked permissions in Instagram or Facebook settings.
+- Make sure your Facebook account password has not changed.
+- Try disconnecting and reconnecting the channel.
+
+## Permission issues
+
+### Insufficient permissions
+
+Pleep requires the following permissions to work correctly:
+
+- **Page messages management** — to read and send messages in Direct.
+- **Instagram account access** — to retrieve profile information.
+- **Comment management** — to reply to comments (if enabled).
+
+To update permissions:
+
+1. Go to Facebook settings > **Business Integrations**.
+2. Find the Pleep application.
+3. Click **View and Edit** and ensure all required permissions are granted.
+4. Return to Pleep and reconnect the channel.
+
+### Permissions were revoked
+
+If you accidentally revoked permissions:
+
+1. Go to **Channels** > **Instagram**.
+2. Click **Reconnect**.
+3. When authorizing via Facebook, make sure to grant all requested permissions.
+
+## Messages not appearing in Pleep
+
+If customers are writing in Direct but messages do not appear in Pleep:
+
+1. **Check connection status** — make sure the Instagram channel is active under **Channels**.
+2. **Reconnect the channel** — sometimes reconnecting resolves the issue.
+3. **Check for restrictions** — Instagram may limit API access if it suspects policy violations.
+
+## Instagram API limitations
+
+Keep the following limitations in mind:
+
+- Pleep can only respond to messages received within the last **24 hours** (Instagram limitation).
+- Some media types may not be supported.
+- Story stickers and reactions are processed as text messages.
+
+If the issue remains unresolved, contact [Pleep support](/docs/troubleshooting).

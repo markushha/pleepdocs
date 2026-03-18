@@ -1,0 +1,59 @@
+---
+title: Chat Modes
+description: AI Mode and Operator Mode — how they work and how to switch between them
+---
+
+Every conversation in Pleep operates in one of two modes: **AI Mode** or **Operator Mode**. The mode determines who responds to the customer — the AI agent automatically or a human agent manually.
+
+## AI Mode
+
+In AI Mode, the AI agent automatically handles all incoming customer messages. This is the default operating mode.
+
+**Behavior:**
+- The customer sends a message
+- The AI agent analyzes the request, references the knowledge base and agent settings
+- The AI agent generates and sends a response automatically
+- All configured extensions apply (message delays, splitting, write after time)
+
+**Capabilities in AI Mode:**
+- Processing text messages, files, and images
+- Voice messages from the customer are handled by the AI agent
+- Feedback (like/dislike) is available for every AI agent response
+- The AI agent follows agent settings and the knowledge base
+
+## Operator Mode
+
+In Operator Mode, the AI agent stops sending automatic responses, and a human agent takes over the conversation.
+
+**Behavior:**
+- The AI agent does not send automatic responses
+- The agent sees customer messages in real time
+- The agent replies manually through the monitoring interface
+- Sending files, images, and voice messages is supported
+
+**When it is used:**
+- Complex or non-standard questions beyond the knowledge base
+- Handling complaints and sensitive situations
+- When the customer asked to speak with a person
+- When Auto-switch is triggered
+
+## Switching between modes
+
+### Automatic (Auto-switch)
+
+Auto-switch is an extension that monitors triggers (keywords, external channels) and automatically switches a conversation to Operator Mode. It also supports automatic reversion to AI Mode after a specified time. Learn more in the [Operator Handoff](/docs/chats/operator-handoff) section.
+
+### Manual
+
+Click the mode toggle button in the conversation window:
+
+- **AI Mode -> Operator Mode** — the AI agent stops automatic responses, and you start replying manually
+- **Operator Mode -> AI Mode** — the AI agent resumes automatic operation
+
+## Mode indicator
+
+The current conversation mode is displayed in the conversation list and in the conversation window. This lets you quickly identify which conversations are handled by the AI agent and which are handled by an operator.
+
+<Callout title="Tip">
+  Configure Auto-switch in the [Extensions](/docs/configuration/operator-settings) section so the AI agent automatically switches to an operator in the right situations and returns to AI Mode after the conversation ends.
+</Callout>

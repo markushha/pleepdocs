@@ -1,0 +1,38 @@
+---
+title: Broadcast Billing
+description: How WABA broadcast billing works — Meta charges directly, Pleep does not charge extra
+---
+
+When sending WABA broadcasts via the WhatsApp Business API, payment is charged by Meta directly. Pleep does not charge any additional fees for sending template messages.
+
+## How does it work?
+
+Meta sets the cost of each template message based on:
+
+- **Recipient's country** — rates differ by country
+- **Template category** — marketing messages cost more than utility messages
+- **Sending volume** — Meta may provide free conversations within a certain limit
+
+For Kazakhstan, the cost is approximately **30–40 KZT per recipient**.
+
+## Setting up billing
+
+To enable WABA broadcasts, you need to add a payment card in Meta's settings:
+
+1. Go to Meta Business Settings
+2. Open **Accounts** → **WhatsApp**
+3. Select your business account
+4. Navigate to **Payment Settings**
+5. Click **Add payment method** and enter your card details
+
+<Callout title="Broadcasts will not send without a card">
+  If a payment method is not configured, WABA broadcasts will not be sent. Pleep will display an error when you attempt to send.
+</Callout>
+
+## Who charges you?
+
+Meta charges your payment card directly. Pleep is not an intermediary in billing and does not take any additional commission for sending broadcasts.
+
+## Free messages
+
+If a customer messages you first, you can reply for free within **24 hours**. This applies to regular replies, not template broadcasts. Use this window to communicate with active customers at no additional cost.

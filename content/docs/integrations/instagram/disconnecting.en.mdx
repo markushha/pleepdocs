@@ -1,0 +1,83 @@
+---
+title: Disconnecting Instagram
+description: How to disconnect the Instagram integration from Pleep and what happens to existing conversations
+---
+
+If you need to disconnect the Instagram integration from Pleep, follow the instructions below. You can disconnect the integration at any time and reconnect it when needed.
+
+## How to disconnect Instagram
+
+<Steps>
+
+### Step 1. Open integration settings
+
+1. Log into the **Pleep** dashboard
+2. Navigate to **Integrations** in the side menu
+3. Find the **Instagram** card with the **Connected** status
+
+### Step 2. Disconnect the integration
+
+1. Click on the Instagram card or the **Settings** button (gear icon)
+2. In the window that opens, click **Disconnect**
+3. Confirm the disconnection in the dialog box
+
+### Step 3. Verify the status
+
+After disconnecting:
+
+- The integration status will change to **Not connected**
+- The AI agent will **stop** responding to new messages in Instagram Direct
+- Automatic notifications will be disabled — Pleep will no longer receive notifications about incoming messages
+
+</Steps>
+
+## What happens to existing conversations
+
+<Callout title="Data is preserved">
+  All existing conversations **remain in the chat history** of Pleep. You can view them in the **Chats** section after disconnecting the integration.
+</Callout>
+
+After disconnecting Instagram:
+
+- **Conversations are preserved** — the entire dialogue history with customers remains accessible in the Pleep dashboard for viewing and analysis
+- **The AI stops responding** — new messages in Instagram Direct will not be processed by the AI agent
+- **Customers are not notified** — customers will not be informed about the disconnection; their messages will simply go without an automatic response
+- **The access token is deleted** — Pleep deletes the stored authorization token; when reconnecting, you will need to authorize through Facebook again
+
+## Revoking permissions in Facebook
+
+If you want to completely revoke Pleep's access to your Instagram, in addition to disconnecting in Pleep, you can remove the app from Facebook:
+
+1. Open **Facebook** and go to **Settings and privacy** then **Settings**
+2. Select **Security and login** then **Apps and Websites**
+3. Find **Pleep** in the list of active apps
+4. Click **Remove** and confirm the action
+
+<Callout type="warn" title="After removing the app">
+  If you remove the Pleep app from Facebook, reconnecting will require going through the full authorization process again and granting all permissions.
+</Callout>
+
+## How to reconnect Instagram
+
+If you decide to reconnect Instagram to Pleep:
+
+1. Make sure all the [prerequisites](/docs/integrations/instagram/prerequisites) are still met
+2. Navigate to **Integrations** in Pleep
+3. Click **Connect** on the Instagram card
+4. Complete the Facebook authorization again
+5. Send a test message to verify
+
+All previous conversations will remain in the history. New messages from customers will start being processed by the AI agent immediately after reconnecting.
+
+## Temporary pause
+
+If you need to temporarily pause message processing without fully disconnecting the integration:
+
+- In **Integrations** then **Instagram** then **Settings**, switch the AI agent to **Pause** mode
+- In pause mode, incoming messages will still arrive in Pleep, but the AI will not respond automatically
+- Agents can respond manually through the Pleep dashboard
+- To resume AI operation, disable pause mode
+
+<Callout title="Need help?">
+  If you encounter issues with disconnecting or reconnecting Instagram, contact Pleep support through the chat in the dashboard.
+</Callout>

@@ -1,0 +1,119 @@
+---
+title: Connection Guide
+description: Detailed step-by-step instructions for connecting WhatsApp to the Pleep platform via WhatsApp Business API
+---
+
+Follow this guide to connect WhatsApp to Pleep. The entire process takes 10–15 minutes if you have already prepared all the [prerequisites](/docs/integrations/whatsapp/prerequisites).
+
+<Callout type="warn" title="Before you begin">
+  Make sure your phone number has been registered in WhatsApp Business App for **at least 7 days**, is regularly used for sending and receiving messages, and has no Meta policy violations. Failure to meet these conditions may result in your number being blocked.
+</Callout>
+
+<Steps>
+
+### Step 1. Install WhatsApp Business App and register your number
+
+If you have not done this yet:
+
+1. Download **WhatsApp Business** from the App Store or Google Play (this is a separate app from regular WhatsApp)
+2. Open the app and register your business number
+3. Verify the number via SMS code
+4. Fill in the company profile:
+   - Company name
+   - Business category
+   - Business description
+   - Address
+   - Business hours
+   - Website URL
+   - Email
+
+<Callout title="Tip">
+  Fill in the profile as completely as possible — this increases Meta's trust in your account and reduces the risk of bans. Read more about profile setup in the [WhatsApp Business Profile](/docs/integrations/whatsapp/business-profile) section.
+</Callout>
+
+### Step 2. Create a Meta Business Portfolio
+
+1. Go to business.facebook.com
+2. Log in with your Facebook account (use the personal account of the business owner or administrator)
+3. Click **"Create Account"**
+4. Enter:
+   - **Company name** — must exactly match the official name (e.g., "Pleep LLC", not "pleep" or "PLEEP")
+   - **Your name** — the administrator's name
+   - **Work email** — you will receive notifications here
+5. Click "Submit"
+6. Confirm your email by clicking the link in the email
+
+<Callout type="warn" title="Warning">
+  The company name in Meta Business Portfolio **cannot be changed** after creation. Make sure it exactly matches the name on your website, documents, and WhatsApp Business Profile.
+</Callout>
+
+### Step 3. Create a Facebook Page
+
+If your company does not have a Facebook Page yet:
+
+1. Log in to Facebook
+2. In the left menu, click **"Pages"** then **"Create New Page"**
+3. Select the type: **Business or Brand**
+4. Enter the page name (should match the company name)
+5. Choose a business category
+6. Add a logo and cover photo
+7. Link the page to your Meta Business Portfolio:
+   - Go to Meta Business Settings
+   - Open "Accounts" then "Pages"
+   - Click "Add" then "Add a Page"
+   - Enter the name or URL of your page
+
+### Step 4. Connect WhatsApp in Pleep
+
+1. Log in to your Pleep dashboard
+2. Navigate to **Integrations** in the sidebar
+3. Find the **WhatsApp** card and click **"Connect"**
+4. A Meta authorization window (Embedded Signup) will open
+5. Log in with the Facebook account that is an administrator of the Meta Business Portfolio
+6. Select your **Meta Business Portfolio** from the list
+7. Select or create a **WhatsApp Business Account**
+8. Choose the **phone number** you want to connect
+9. Confirm the number (if required) via SMS code or phone call
+10. Click **"Finish"**
+
+### Step 5. Wait for verification
+
+After completing the connection process:
+
+1. Pleep will verify the connection to the WhatsApp Business API
+2. You will see the connection status in the "Integrations" section
+3. Status indicators:
+   - **Connected** (green) — everything is working, you can start
+   - **Pending verification** (yellow) — Meta is reviewing your account, usually takes up to 10 minutes
+   - **Error** (red) — something went wrong, check the error description
+
+</Steps>
+
+## After connecting
+
+Once WhatsApp is successfully connected:
+
+1. **Assign an agent** — go to the integration settings and select the AI agent that will handle incoming messages
+2. **Test it** — send a message to the connected number from another phone and make sure the agent responds
+3. **Set up a welcome message** — in the agent settings, you can configure an automatic greeting for new customers
+4. **Configure templates** — if you plan to send broadcasts, create templates and submit them for Meta approval
+
+## Troubleshooting
+
+### "Number already registered" error
+
+The number is already linked to another WhatsApp Business Account. You need to unlink it from the previous account in Meta Business Settings first.
+
+### "Business verification required" error
+
+Meta requires business verification. Go to Meta Business Settings, then Security Center, and complete the verification process. Read more in the [Meta Verification](/docs/integrations/whatsapp/verification) section.
+
+### SMS code not arriving
+
+- Make sure the number can receive SMS
+- Try the phone call verification option
+- Check whether your carrier blocks SMS from international senders
+
+<Callout title="Need help?">
+  If you encounter a problem during connection, contact Pleep support via the website chat or email support@pleep.app.
+</Callout>

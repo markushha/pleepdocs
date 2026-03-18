@@ -1,0 +1,4 @@
+{
+  "title": "Настройки",
+  "pages": ["working-hours", "operator-settings", "message-delays", "scheduled-messages", "write-after-time"]
+}

@@ -1,0 +1,81 @@
+---
+title: Prerequisites
+description: Requirements and prerequisites for connecting Instagram Direct Messages to the Pleep platform
+---
+
+Before connecting Instagram to Pleep, make sure you have everything you need. The integration works through the official Instagram Messaging API, which requires specific account configuration.
+
+## Requirements
+
+### 1. Instagram Business account
+
+<Callout type="warn" title="Personal accounts are not supported">
+  The Pleep integration works **only** with Instagram Business or Instagram Creator accounts. If you have a personal account, you must switch to a Professional account **before** starting the setup. Without this, Instagram will not provide access to the Messaging API.
+</Callout>
+
+To check your account type:
+
+1. Open Instagram and go to your profile
+2. Tap the **menu** (three lines) in the top right corner
+3. Go to **Settings and privacy**
+4. Select **Account type and tools**
+5. If you see the option "Switch to Professional account" — you have a personal account and need to switch
+
+### 2. Facebook Page connected to Instagram
+
+Your Instagram Business account must be **linked to a Facebook Page**. This is a mandatory requirement of the Instagram Messaging API.
+
+If you do not have a Facebook Page yet:
+
+- Create a page at facebook.com/pages/create
+- The page name should match your business
+- Fill in the basic information: category, description, contacts
+
+### 3. Admin access to the Facebook Page
+
+You must be an **administrator** of the Facebook Page that is linked to your Instagram account. Without admin access, you will not be able to grant Pleep the necessary permissions.
+
+To check your role:
+
+1. Open your Facebook Page
+2. Go to the Page **Settings**
+3. Select **Page Roles**
+4. Verify that your account is listed as **Admin**
+
+<Callout type="warn" title="No admin access?">
+  If you are not an admin of the page, ask the current admin either to grant you the admin role or to set up the integration in Pleep themselves.
+</Callout>
+
+### 4. Facebook App permissions for Instagram Messaging
+
+When connecting Instagram through Pleep, the system will request the following permissions:
+
+- **instagram_manage_messages** — read and send messages in Direct
+- **instagram_basic** — access to basic profile information
+- **pages_manage_metadata** — manage page notification subscriptions
+- **pages_messaging** — receive and send messages through the page
+
+All of these permissions are requested automatically during the setup process. You simply need to **confirm access** when authorizing through Facebook.
+
+## Pre-connection checklist
+
+Make sure all items are complete:
+
+- [ ] You have an Instagram Business or Creator account (not personal)
+- [ ] Instagram is linked to a Facebook Page
+- [ ] You are an administrator of that Facebook Page
+- [ ] You know the login credentials for the Facebook account that is the page admin
+- [ ] Your Instagram account has messaging access enabled for connected apps
+
+## Enabling messaging access
+
+Before connecting, make sure messaging access for third-party apps is enabled in Instagram:
+
+1. Open Instagram and go to **Settings and privacy**
+2. Select **Messages and story replies**
+3. Select **Message controls**
+4. Under **Connected tools**, enable the **Allow access to messages** setting
+
+<Callout title="All set?">
+  If all checklist items are complete, proceed to the [Connection Guide](/docs/integrations/instagram/connection-guide).
+</Callout>

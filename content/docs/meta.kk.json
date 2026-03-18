@@ -1,0 +1,23 @@
+{
+  "root": true,
+  "pages": [
+    "---Бастау---",
+    "getting-started",
+    "knowledge-base",
+    "sandbox",
+    "---AI-агент---",
+    "chats",
+    "improvement",
+    "configuration",
+    "---Арналар---",
+    "integrations",
+    "broadcasts",
+    "---Құралдар---",
+    "extensions",
+    "analytics",
+    "voice-agent",
+    "---Аккаунт---",
+    "account",
+    "troubleshooting"
+  ]
+}

@@ -1,0 +1,75 @@
+---
+title: Creating a Broadcast
+description: Step-by-step guide to creating and sending a broadcast in Pleep — WhatsApp, WABA, voice, or hybrid
+---
+
+Creating a broadcast in Pleep is a straightforward process with just a few steps. Go to **Dashboard** → **Broadcast** and select the broadcast type on the corresponding tab.
+
+## Choosing a broadcast type
+
+Before creating a broadcast, determine which type you need:
+
+- **WhatsApp Broadcast** — quickly send messages to multiple contacts
+- **WABA Broadcast** — broadcast using Meta-approved templates (the primary method)
+- **WABA Coexistence Broadcast** — hybrid mode with AI agent and live operator
+- **Voice Broadcast** — automated voice calls via a voice AI agent
+
+<Callout title="Before you begin">
+  For WABA broadcasts, make sure you have at least one approved message template. If you do not have one yet, [create a template](/docs/broadcasts/templates) first.
+</Callout>
+
+<Steps>
+
+### Select your audience
+
+Determine who you want to send the broadcast to:
+
+- **All contacts** — send to every customer in your database
+- **Segment** — choose a group of contacts based on specific criteria (e.g., city, date of last interaction)
+- **Manual list** — upload a list of phone numbers
+
+Use recipient filtering to precisely define your target audience.
+
+### Choose a template (for WABA)
+
+For WABA broadcasts, select one of your approved message templates. You will see a preview of how the message will look.
+
+### Customize variables
+
+If the template contains variables (e.g., `{{1}}` — customer name), specify what data to insert:
+
+- **Customer name** — pulled from the contact card
+- **Custom text** — the same for all recipients
+- **Contact field** — any field from the customer's contact card
+
+### Set the send time
+
+Choose when to send the broadcast:
+
+- **Immediately** — sending starts right after confirmation
+- **Schedule** — pick a date and time for deferred sending
+
+### Preview the message
+
+Review how the message will appear for a specific recipient:
+
+- Verify that variables are populated correctly
+- Check the text for errors
+- Ensure links and buttons work properly
+
+### Send the broadcast
+
+Click **Send** to confirm. Pleep will begin delivering messages, and you can track progress in real time.
+
+</Steps>
+
+## After sending
+
+- Track the delivery status of each message in the broadcasts section
+- The system will automatically retry failed deliveries
+- Customer replies will be handled by the AI agent automatically (or by a manager in Coexistence mode)
+- You will receive a notification if a customer requests to speak with a live agent
+
+<Callout title="Please note">
+  Meta charges for each delivered template message (WABA). Make sure you have [billing](/docs/broadcasts/payment) configured.
+</Callout>

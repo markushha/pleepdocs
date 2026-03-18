@@ -1,0 +1,64 @@
+---
+icon: Settings
+title: Agent Settings
+description: Overview of all AI agent settings — extensions and agent parameters
+---
+
+AI agent settings are split into two areas: **Extensions** (`/extensions`) and **Agent Parameters** (`/settings`). Extensions manage automation and conversation behavior, while parameters handle the agent's base configuration.
+
+## Extensions (/extensions)
+
+Extensions add additional functionality to the AI agent:
+
+### Working Hours
+
+Set the AI agent's operating schedule by day of the week. Outside working hours, the agent automatically changes its behavior.
+
+[Learn more about working hours](/docs/configuration/working-hours)
+
+### Auto-switch (Operator Handoff)
+
+Configure automatic switching between AI Mode and Operator Mode: keyword triggers, external channel detection, and reversion rules.
+
+[Learn more about operator settings](/docs/configuration/operator-settings)
+
+### Message Delays
+
+Add pauses between AI agent messages for more natural-feeling conversations.
+
+[Learn more about message delays](/docs/configuration/message-delays)
+
+### Scheduled Messages
+
+Schedule automated follow-up messages to customers based on time-based triggers.
+
+[Learn more about scheduled messages](/docs/configuration/scheduled-messages)
+
+### Write After Time
+
+Configure automatic messages to be sent after customer inactivity. This feature is available on the PRO plan.
+
+[Learn more about the Write After Time feature](/docs/configuration/write-after-time)
+
+### Message Splitting
+
+Break long AI agent responses into parts with configurable maximum characters per message and pauses between splits. This is configured within the Message Delays extension.
+
+### Notifications
+
+Receive Telegram alerts for new messages and help requests.
+
+## Agent Parameters (/settings)
+
+Agent settings define the base configuration:
+
+- **Agent name** — displayed in the interface
+- **Description** — a brief description of the AI agent
+- **Logo** — the agent's image
+- **Timezone** — used for schedules and scheduled messages
+- **Branding** — interface colors
+- **Agent settings** — the main settings that define the AI agent's behavior
+
+<Callout title="Tip">
+  Start by configuring agent settings and working hours — these are the two most important settings for launching your AI agent.
+</Callout>

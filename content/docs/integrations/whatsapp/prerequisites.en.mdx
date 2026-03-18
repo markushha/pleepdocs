@@ -1,0 +1,115 @@
+---
+title: Prerequisites
+description: Complete list of requirements for connecting WhatsApp to Pleep via WhatsApp Business API
+---
+
+Before connecting WhatsApp to Pleep, make sure you have everything you need. Below is a detailed checklist with explanations for each item.
+
+## 1. Phone number
+
+You need a phone number that will be used for the WhatsApp Business API. There are two options:
+
+### Option A: Use an existing number
+
+If you already have a number with WhatsApp, you can use it to connect to Pleep via Coexistence. Thanks to Coexistence technology, **you do not need to delete your existing WhatsApp account** — the number will work simultaneously in WhatsApp Business App and through the API.
+
+<Callout type="warn" title="If you are NOT using Coexistence">
+  When connecting via the classic method (without Coexistence), you must **delete the existing WhatsApp account** on that number before registering with the API. All chats and data will be permanently lost. Pleep uses Coexistence by default, so deletion is not required in most cases.
+</Callout>
+
+### Option B: Buy a new number
+
+If you want a dedicated number for business communications:
+
+- Purchase a SIM card from any carrier
+- The number must be able to receive SMS or calls for verification
+- Virtual numbers (VoIP) are supported, but physical SIM cards are more reliable
+
+## 2. Meta Business Portfolio (formerly Business Manager)
+
+Meta Business Portfolio is the management center for your business within the Meta ecosystem (Facebook, Instagram, WhatsApp).
+
+### How to create one
+
+1. Go to business.facebook.com
+2. Click "Create Account"
+3. Enter your company name, your name, and work email
+4. Fill in your company details
+
+<Callout type="warn" title="Warning: the name cannot be changed!">
+  The company name in Meta Business Portfolio **cannot be changed** after creation. It must match the official name of your company and the name in your WhatsApp Business Profile. Double-check the spelling before creating it.
+</Callout>
+
+### Meta Business Portfolio requirements
+
+- Must be linked to a real business (not a personal account)
+- The email must be a working one — you will receive notifications from Meta
+- It is recommended to assign at least two administrators for security
+
+## 3. Facebook Page
+
+A Facebook Page is required to link your WhatsApp Business Account to your Meta Business Portfolio.
+
+### How to create one
+
+1. Log in to Facebook
+2. Click "Create" then "Page"
+3. Select the type: **Business or Brand**
+4. Fill in the name and category
+5. Link the page to your Meta Business Portfolio
+
+### Requirements
+
+- The page must be of type "Business or Brand" (not "Community" or "Public Figure")
+- The page name should correspond to your business
+- The page must be linked to your Meta Business Portfolio
+
+## 4. WhatsApp Business App
+
+Before connecting to the API, your number must be registered in WhatsApp Business App and active.
+
+### Number requirements
+
+- WhatsApp Business App is installed on your phone
+- The number is registered in WhatsApp Business App
+- The account has been active for **at least 7 days** — this is important for stability
+- The number regularly sends and receives messages (not a "dead" number)
+- There are no Meta policy violations on this number
+
+<Callout type="warn" title="The 7-day rule">
+  If the number was registered in WhatsApp less than 7 days ago, the API connection may fail or the account may be blocked. Be sure to wait until the number is at least a week old.
+</Callout>
+
+## 5. Payment card in Meta Business Settings
+
+Meta charges for template messages that you initiate. A payment card is required for broadcasts and templates to work.
+
+### How to add one
+
+1. Go to Meta Business Settings
+2. Open the "Billing and Payments" section
+3. Click "Add Payment Method"
+4. Enter your bank card details (Visa or Mastercard)
+
+### Pricing
+
+- **Replies within 24 hours** of a customer's message — **free**
+- **Template messages** (broadcasts, notifications) — charged at Meta's rates
+- Cost depends on the recipient's country and message type
+- For Kazakhstan, template messages cost approximately $0.03–0.05
+
+<Callout title="Tip">
+  Even if you do not plan to send broadcasts right away, add a card in advance. Without a linked card, sending template messages will be impossible.
+</Callout>
+
+## Final checklist
+
+Before connecting, make sure you have:
+
+- [ ] A phone number with active WhatsApp Business (7+ days)
+- [ ] A Meta Business Portfolio at business.facebook.com
+- [ ] A Facebook Page linked to the Business Portfolio
+- [ ] A completed profile in WhatsApp Business App
+- [ ] A payment card in Meta Business settings
+
+When everything is ready, proceed to the [Connection Guide](/docs/integrations/whatsapp/connection-guide).

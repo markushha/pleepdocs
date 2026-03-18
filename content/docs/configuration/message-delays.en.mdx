@@ -1,0 +1,44 @@
+---
+title: Message Delays
+description: Configuring pauses between messages and splitting long responses into parts
+---
+
+The **Message Delays** extension on the `/extensions` page lets you make the AI agent's communication feel more natural. You configure pauses between messages and split long responses into shorter parts.
+
+## Why use delays?
+
+Instant responses can feel unnatural. Small pauses between messages create the feeling of a live conversation and make interacting with the AI agent more comfortable for the customer.
+
+## Delay between messages
+
+Configure the pause the AI agent takes before sending a response:
+
+- Set the delay time in seconds
+- The AI agent waits the specified pause before each response, simulating typing
+
+## Message splitting
+
+The AI agent can split long responses into several short messages — the way people typically write in messengers.
+
+### Splitting parameters
+
+- **Maximum characters per message** — set the character limit per message. If a response exceeds the limit, it is split into parts
+- **Pause between splits** — set the pause between sending individual message parts
+
+### Example
+
+**Without splitting:**
+> "Yes, this product is in stock. The price is 15,000 tenge. Shipping is free for orders over 30,000 tenge. Would you like to place an order?"
+
+**With splitting:**
+> "Yes, this product is in stock."
+>
+> "The price is 15,000 tenge. Shipping is free for orders over 30,000 tenge."
+>
+> "Would you like to place an order?"
+
+A configured pause is applied between each part.
+
+<Callout title="Tip">
+  Do not set delays that are too long — customers appreciate fast responses. An optimal delay is 1—3 seconds.
+</Callout>

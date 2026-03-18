@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Prevent content jump when clicking TOC links */
+[id] {
+  scroll-margin-top: 5rem;
+}
+
+/* Tighter spacing between title, description, and content */
+.flex.flex-col.gap-6 {
+  gap: 1rem;
+}
+
+/* Reduce top padding on content area */
+.pt-8 {
+  padding-top: 1.5rem !important;
+}
+.md\:pt-12 {
+  padding-top: 2rem !important;
+}
+
+/* Prevent sidebar layout shift when expanding/collapsing sections */
+[data-sidebar] nav,
+aside nav {
+  overflow-y: auto;
+  overflow-x: hidden;
+}

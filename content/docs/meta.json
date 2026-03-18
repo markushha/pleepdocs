@@ -1,0 +1,23 @@
+{
+  "root": true,
+  "pages": [
+    "---Начало---",
+    "getting-started",
+    "knowledge-base",
+    "sandbox",
+    "---AI-агент---",
+    "chats",
+    "improvement",
+    "configuration",
+    "---Каналы---",
+    "integrations",
+    "broadcasts",
+    "---Инструменты---",
+    "extensions",
+    "analytics",
+    "voice-agent",
+    "---Аккаунт---",
+    "account",
+    "troubleshooting"
+  ]
+}

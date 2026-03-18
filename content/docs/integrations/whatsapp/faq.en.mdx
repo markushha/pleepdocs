@@ -1,0 +1,131 @@
+---
+title: FAQ
+description: Answers to frequently asked questions about connecting and using WhatsApp in Pleep
+---
+
+## Connection
+
+### Do I need Meta verification to connect WhatsApp?
+
+No, verification is **not mandatory** for connection. You can connect WhatsApp to Pleep in 10 minutes without verification. However, without verification there is a limit of 250 unique contacts per day for outbound business-initiated messages.
+
+Verification is recommended to remove limits, especially if you plan to send broadcasts. Read more in the [Meta Verification](/docs/integrations/whatsapp/verification) section.
+
+### What are the phone number requirements?
+
+Key requirements:
+
+- The number must be registered in **WhatsApp Business App** (not regular WhatsApp)
+- The account must be active for **at least 7 days**
+- The number must be regularly used for sending and receiving messages
+- There must be no Meta policy violations on the number
+
+Thanks to Coexistence technology used by Pleep, **you do not need to delete your existing WhatsApp account**. The number will work simultaneously in the app and through the API.
+
+If you want to use a new number, simply buy a SIM card, install WhatsApp Business, and wait 7 days before connecting to Pleep.
+
+### How long does the connection take?
+
+With all the necessary components ready (Meta Business Portfolio, Facebook Page, active number), the connection takes **10–15 minutes**. If you need to create accounts from scratch and wait 7 days for the number to be active, it will take correspondingly longer.
+
+### Can I connect multiple WhatsApp numbers?
+
+Yes, you can connect multiple WhatsApp numbers to a single Pleep account. Each number can be linked to a separate AI agent or handled by the same agent.
+
+## Messages and limits
+
+### What are the messaging limits?
+
+Limits depend on verification status:
+
+| Status | Unique contacts/day limit |
+|--------|--------------------------|
+| Without verification | 250 |
+| Verified, Tier 1 | 1,000 |
+| Tier 2 | 10,000 |
+| Tier 3 | 100,000 |
+| Unlimited | No limit |
+
+The limit applies only to **outbound business-initiated messages** (templates, broadcasts). Replies to incoming customer messages within the 24-hour window are **unlimited**.
+
+### What is the 24-hour window?
+
+When a customer messages you on WhatsApp, a **24-hour service window** opens. During these 24 hours, you can send the customer any messages for free (not just templates).
+
+After 24 hours without a response from the customer, you can reach them **only through a template message**, which is charged at Meta's rates.
+
+### Why is a payment card needed?
+
+Meta charges for **template messages** — these are messages you initiate first (broadcasts, notifications, reminders). The card is linked in Meta Business Settings to pay for these messages.
+
+**Free:**
+- Replies to customers within the 24-hour window
+- Receiving incoming messages
+
+**Paid:**
+- Template messages (broadcasts, first contact with a customer)
+- Cost for Kazakhstan: approximately $0.03–0.05 per message
+
+Even if you do not plan to send broadcasts right away, we recommend adding a card in advance so the feature is available when needed.
+
+## AI agent operation
+
+### How does the AI agent handle WhatsApp messages?
+
+When a customer sends a message to the connected WhatsApp number:
+
+1. The message is received by Pleep through the WhatsApp Business API
+2. The AI agent analyzes the message and conversation context
+3. It generates a response based on the knowledge base and settings
+4. It sends the reply to the customer on WhatsApp
+
+The entire process takes a few seconds. The customer sees a typing indicator while the agent prepares the response.
+
+### Can a human agent intervene in a conversation?
+
+Yes. At any point, an agent can take over the conversation through the Pleep interface:
+
+- Pause the AI agent for a specific chat
+- Reply to the customer manually
+- Return control to the AI agent
+
+The AI agent can also automatically escalate complex questions to a human agent with a notification.
+
+### Does the agent support media files?
+
+Yes, the AI agent supports the following through WhatsApp:
+
+- **Images** — sending and receiving product photos, instructions
+- **Documents** — sending and receiving PDFs, price lists
+- **Audio** — receiving voice messages from customers
+- **Video** — sending and receiving video
+- **Contacts** — exchanging contact cards
+- **Geolocation** — sending and receiving locations
+
+## Problems and solutions
+
+### Customers are not receiving messages from the agent
+
+Check:
+1. Connection status in the "Integrations" section — should be green
+2. Whether an AI agent is assigned to this integration
+3. Whether the daily message limit has been exceeded
+4. Quality rating in WhatsApp Manager — sending may be restricted with a red rating
+
+### Number has been banned
+
+A detailed guide on ban types and recovery methods is in the [Avoiding Bans](/docs/integrations/whatsapp/avoiding-bans) section.
+
+### Error during connection
+
+Most common causes:
+- The number has been active for less than 7 days
+- The number is already linked to another WhatsApp Business Account
+- Meta Business Portfolio has not been created or configured
+- Facebook Page is not linked to the Business Portfolio
+
+Detailed troubleshooting instructions are in the [Connection Guide](/docs/integrations/whatsapp/connection-guide) section.
+
+<Callout title="Didn't find your answer?">
+  Contact Pleep support via the website chat or email support@pleep.app. We will help with any WhatsApp integration question.
+</Callout>
