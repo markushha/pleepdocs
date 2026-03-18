@@ -1,21 +1,15 @@
 import { config, collection, fields } from '@keystatic/core';
 
-const isGithubMode =
-  process.env.NODE_ENV === 'production' &&
-  !!process.env.KEYSTATIC_GITHUB_CLIENT_ID;
-
-const storage = isGithubMode
-  ? {
-      kind: 'github' as const,
-      repo: {
-        owner: 'markushha',
-        name: 'pleepdocs',
-      },
-    }
-  : { kind: 'local' as const };
-
 export default config({
-  storage,
+  storage: process.env.NODE_ENV === 'development'
+    ? { kind: 'local' as const }
+    : {
+        kind: 'github' as const,
+        repo: {
+          owner: 'markushha',
+          name: 'pleepdocs',
+        },
+      },
   collections: {
     docs: collection({
       label: 'Documentation',
