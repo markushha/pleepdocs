@@ -1,0 +1,47 @@
+---
+icon: Code
+title: Public API
+description: Pleep Public API v1 — send WhatsApp template messages programmatically and manage API keys
+---
+
+The Pleep Public API lets you integrate Pleep's messaging capabilities into your own systems. You can send WhatsApp template messages to one or multiple recipients directly from your backend, CRM, or automation tools.
+
+## What you can do with the API
+
+- **Send template messages** — trigger WhatsApp messages from your own systems without logging into the dashboard
+- **Batch sending** — send to multiple recipients in a single request
+- **Support for both WABA channels** — works with WABA Coexistence (Meta Cloud API) and legacy WABA (GupShup)
+
+## Getting started
+
+1. [Create an API key](/docs/api/api-keys) in the dashboard
+2. Review the [Send Template Message](/docs/api/send-template) endpoint documentation
+3. Make your first API call
+
+<Callout title="API version">
+  The current API version is **v1**. All endpoints are prefixed with `/api/v1/`.
+</Callout>
+
+## Authentication
+
+All API requests require an API key passed in the `X-API-Key` header. You can create and manage API keys in the dashboard under **Settings** → **API Keys**, or at the `/api-keys` page.
+
+```
+X-API-Key: your-api-key
+```
+
+<Callout title="Keep your API key safe">
+  Your API key is shown only once when you create it. Store it securely. If you lose it, revoke the old key and create a new one.
+</Callout>
+
+## Rate limits
+
+The API allows **30 requests per minute** per API key. If you exceed this limit, you will receive a `429` error with the `RATE_LIMITED` code. Wait and retry after a short delay.
+
+## Base URL
+
+All API requests should be sent to your Pleep instance's base URL:
+
+```
+https://app.pleep.app/api/v1/
+```

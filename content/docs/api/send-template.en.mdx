@@ -1,0 +1,129 @@
+---
+title: Send Template Message
+description: Send a WhatsApp template message to one or multiple recipients via the Pleep API
+---
+
+Send a WhatsApp template message to one or multiple phone numbers. Supports both WABA Coexistence (Meta Cloud API) and legacy WABA (GupShup) channels.
+
+## Endpoint
+
+```
+POST /api/v1/messages/send-template
+```
+
+## Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `X-API-Key` | Your API key | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `bot_id` | string | Yes | Bot UUID. Found in your integration settings in the dashboard |
+| `channel` | string | Yes | Channel to send through: `waba` or `waba_coexistence` |
+| `to` | object or array | Yes | Single recipient or array of recipients |
+| `template_id` | string | Yes | Template identifier. Copy it from the template info in the **Broadcasts** section |
+| `template_language` | string | No | Template language code. Defaults to `ru` |
+
+### Recipient object
+
+Each recipient in the `to` field has the following structure:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `phone` | string | Yes | Phone number in international format (e.g. `+77001234567`) |
+| `params` | array | No | Template variable values for this recipient (e.g. customer name) |
+
+## Examples
+
+### Single recipient
+
+```json
+{
+  "bot_id": "your-bot-uuid",
+  "channel": "waba_coexistence",
+  "to": {
+    "phone": "+77001234567",
+    "params": ["John"]
+  },
+  "template_id": "welcome_template",
+  "template_language": "ru"
+}
+```
+
+### Multiple recipients (batch)
+
+```json
+{
+  "bot_id": "your-bot-uuid",
+  "channel": "waba",
+  "to": [
+    { "phone": "+77001234567", "params": ["John"] },
+    { "phone": "+77009876543", "params": ["Sarah"] },
+    { "phone": "+77005551234" }
+  ],
+  "template_id": "welcome_template",
+  "template_language": "en"
+}
+```
+
+## Responses
+
+### Single recipient — success
+
+```json
+{
+  "ok": true,
+  "data": {
+    "message_id": "wamid.HBgLNzcwMDEyMzQ1NjcVAgASGBQzRUI..."
+  }
+}
+```
+
+### Batch — success
+
+```json
+{
+  "ok": true,
+  "data": {
+    "total": 3,
+    "sent": 2,
+    "failed": 1,
+    "results": [
+      { "phone": "+77001234567", "ok": true, "message_id": "wamid.HBg..." },
+      { "phone": "+77009876543", "ok": true, "message_id": "wamid.HBg..." },
+      { "phone": "+77005551234", "ok": false, "error": "PROVIDER_ERROR", "message": "Invalid phone number" }
+    ]
+  }
+}
+```
+
+## Error codes
+
+| HTTP Status | Error Code | Description |
+|-------------|------------|-------------|
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | API key does not have access to this bot |
+| 404 | `BOT_NOT_FOUND` | The specified `bot_id` does not exist |
+| 422 | `VALIDATION_ERROR` | Invalid request body (missing fields, wrong format) |
+| 429 | `QUOTA_EXCEEDED` | Monthly message quota has been reached |
+| 429 | `RATE_LIMITED` | Too many requests. Limit is 30 requests per minute per API key |
+| 502 | `BILLING_ERROR` | Payment issue on the messaging provider side |
+| 502 | `PROVIDER_ERROR` | Error from the WhatsApp provider (Meta or GupShup) |
+
+### Error response format
+
+```json
+{
+  "ok": false,
+  "error": "VALIDATION_ERROR",
+  "message": "Field 'template_id' is required"
+}
+```
+
+<Callout title="Tip">
+  If you receive a `PROVIDER_ERROR`, check that the template is approved, the phone number is valid, and your WABA account is in good standing.
+</Callout>
