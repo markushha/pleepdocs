@@ -1,45 +1,54 @@
 ---
 title: API Keys
-description: How to create, list, and revoke API keys for the Pleep Public API
+description: How to create, view, and delete API keys for the Pleep Public API
 ---
 
-API keys are used to authenticate requests to the Pleep Public API. You can manage your API keys in the dashboard at **Settings** → **API Keys**, or navigate directly to the `/api-keys` page.
+API keys are used to authenticate requests to the Pleep Public API. You can manage your API keys in the [personal cabinet → Developers](https://app.pleep.app/dashboard?cabinet=developers).
 
 ## Creating an API key
 
-1. Go to **Settings** → **API Keys** in the dashboard
-2. Click **Create API Key**
-3. Give the key a descriptive name (e.g. "CRM integration" or "Order notifications")
-4. Copy the key immediately — it is shown only once
+<Steps>
+<Step>
+
+### Open your personal cabinet
+
+In the dashboard, click the profile icon in the top right corner and select **Personal Cabinet**.
+
+![Personal Cabinet](/images/api/personal-cabinet.png)
+
+</Step>
+<Step>
+
+### Go to the Developers section
+
+In the left menu of the personal cabinet, select **Developers**.
+
+![Developers section](/images/api/developers-section.png)
+
+</Step>
+<Step>
+
+### Create a key
+
+Click **Create API Key**, enter a name (e.g. "CRM integration"), and copy the key.
+
+</Step>
+</Steps>
 
 <Callout title="Important">
-  The full API key is displayed only at the moment of creation. If you lose it, you'll need to revoke the old key and create a new one.
+  The full API key is displayed only at the moment of creation. If you lose it, delete the old key and create a new one.
 </Callout>
 
-## Listing API keys
+## Viewing API keys
 
-You can view all your active API keys in the dashboard. Each entry shows the key name, a masked version of the key, and the creation date.
+All active API keys are displayed in the **Developers** section of your personal cabinet. Each entry shows the key name, a masked version of the key, creation date, and last used date.
 
-## Revoking an API key
+## Deleting an API key
 
 If an API key is compromised or no longer needed:
 
-1. Go to **Settings** → **API Keys**
-2. Find the key you want to revoke
-3. Click **Revoke**
+1. Open [personal cabinet → Developers](https://app.pleep.app/dashboard?cabinet=developers)
+2. Find the key you want to delete
+3. Click the delete icon to the right of the key
 
-The key is disabled immediately. Any requests using the revoked key will receive a `401 UNAUTHORIZED` error.
-
-## API key management endpoints
-
-These endpoints are available for programmatic key management. They require JWT authentication (your dashboard login session), not an API key.
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api-keys` | Create a new API key. Returns the plaintext key once |
-| `GET` | `/api-keys` | List all API keys for your account |
-| `DELETE` | `/api-keys/:id` | Revoke a specific API key |
-
-<Callout title="Note">
-  API key management endpoints use your dashboard login session (JWT), not API key authentication. You typically manage keys through the dashboard UI rather than these endpoints directly.
-</Callout>
+The key is removed immediately. Any requests using the deleted key will receive a `401 UNAUTHORIZED` error.

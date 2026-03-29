@@ -8,7 +8,7 @@ Send a WhatsApp template message to one or multiple phone numbers. Supports both
 ## Endpoint
 
 ```
-POST /api/v1/messages/send-template
+POST https://microservice.pleep.app/api/v1/messages/send-template
 ```
 
 ## Headers
@@ -18,14 +18,67 @@ POST /api/v1/messages/send-template
 | `X-API-Key` | Your API key | Yes |
 | `Content-Type` | `application/json` | Yes |
 
+<ApiPlayground lang="en" />
+
+## Before you start
+
+Before sending a request, you need to collect several parameters: a template, Bot ID, and channel. Follow the steps below.
+
+### Step 1. Create a template
+
+Go to your AI agent, then select **Broadcasts** in the left navigation menu.
+
+![Broadcasts section](/images/api/broadcasts-section.png)
+
+If you don't have a template yet, click **Create broadcast** and create a template. You can use variables `{{1}}`, `{{2}}`, etc. in the template text — for example, to address the customer by name. Templates with variables can only be sent **via API**.
+
+![Creating a template with variables](/images/api/create-template.png)
+
+After creation, the template is sent to Meta for review. Wait for the **Approved** status — only then can you use the template for sending.
+
+Learn more about templates in the [Broadcasts — Templates](/en/broadcasts/templates) section.
+
+### Step 2. Copy the Template ID
+
+In the **Broadcasts** section, find the **My Templates** block. Select the template you need and click on the Template ID text — it will be automatically copied to your clipboard.
+
+![Copying Template ID](/images/api/copy-template-id.png)
+
+### Step 3. Find the Bot ID
+
+Go to **Integrations**, select your WhatsApp Business integration and click **Manage**. On the integration page, you'll see the **Bot ID** field — click the copy icon, and the Bot ID will be copied automatically.
+
+![Bot ID in integration settings](/images/api/bot-id.png)
+
+### Step 4. Determine the channel
+
+The `channel` field value depends on your WhatsApp integration type:
+
+<Tabs items={["waba_coexistence", "waba"]}>
+<Tab value="waba_coexistence">
+
+If in the Broadcasts section you see the **WhatsApp Business** tab — use the `waba_coexistence` channel. This is the new integration through Pleep (Meta Cloud API).
+
+![WhatsApp Business tab](/images/api/channel-waba-coexistence.png)
+
+</Tab>
+<Tab value="waba">
+
+If in the Broadcasts section you see the **WABA (Gupshup)** tab — use the `waba` channel. This is the legacy integration via GupShup.
+
+![WABA Gupshup tab](/images/api/channel-waba-gupshup.png)
+
+</Tab>
+</Tabs>
+
 ## Request body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `bot_id` | string | Yes | Bot UUID. Found in your integration settings in the dashboard |
-| `channel` | string | Yes | Channel to send through: `waba` or `waba_coexistence` |
+| `bot_id` | string | Yes | Bot UUID. Copy from integration settings (step 3) |
+| `channel` | string | Yes | Channel to send through: `waba` or `waba_coexistence` (step 4) |
 | `to` | object or array | Yes | Single recipient or array of recipients |
-| `template_id` | string | Yes | Template identifier. Copy it from the template info in the **Broadcasts** section |
+| `template_id` | string | Yes | Template identifier. Copy from the Broadcasts section (step 2) |
 | `template_language` | string | No | Template language code. Defaults to `ru` |
 
 ### Recipient object
@@ -37,20 +90,39 @@ Each recipient in the `to` field has the following structure:
 | `phone` | string | Yes | Phone number in international format (e.g. `+77001234567`) |
 | `params` | array | No | Template variable values for this recipient (e.g. customer name) |
 
+### Rules for using `params`
+
+- `params` is **optional**. Only provide it when the template contains variables (`{{1}}`, `{{2}}`, etc.)
+- If the template **has no variables** — **do NOT include** the `params` field at all
+- Empty strings in `params` are **not allowed** — the API will return a `422 VALIDATION_ERROR` if you pass `"params": [""]`
+- An empty array `"params": []` is treated as no params
+
 ## Examples
 
-### Single recipient
+### Template with variables
 
 ```json
 {
-  "bot_id": "your-bot-uuid",
+  "bot_id": "your-bot-id",
   "channel": "waba_coexistence",
   "to": {
     "phone": "+77001234567",
-    "params": ["John"]
+    "params": ["John", "25.03.2026"]
   },
-  "template_id": "welcome_template",
-  "template_language": "ru"
+  "template_id": "welcome_template"
+}
+```
+
+### Template without variables
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "to": {
+    "phone": "+77001234567"
+  },
+  "template_id": "simple_greeting"
 }
 ```
 
@@ -58,17 +130,27 @@ Each recipient in the `to` field has the following structure:
 
 ```json
 {
-  "bot_id": "your-bot-uuid",
-  "channel": "waba",
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
   "to": [
     { "phone": "+77001234567", "params": ["John"] },
     { "phone": "+77009876543", "params": ["Sarah"] },
-    { "phone": "+77005551234" }
+    { "phone": "+77005551234", "params": ["Alex"] }
   ],
   "template_id": "welcome_template",
-  "template_language": "en"
+  "template_language": "ru"
 }
 ```
+
+<Callout title="Error: empty strings in params">
+The following request will return a `422` error. If the template has no variables, simply don't include the `params` field:
+
+```json
+{
+  "to": { "phone": "+77001234567", "params": [""] }
+}
+```
+</Callout>
 
 ## Responses
 
@@ -108,7 +190,7 @@ Each recipient in the `to` field has the following structure:
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | API key does not have access to this bot |
 | 404 | `BOT_NOT_FOUND` | The specified `bot_id` does not exist |
-| 422 | `VALIDATION_ERROR` | Invalid request body (missing fields, wrong format) |
+| 422 | `VALIDATION_ERROR` | Invalid request body (missing fields, wrong format, empty strings in params) |
 | 429 | `QUOTA_EXCEEDED` | Monthly message quota has been reached |
 | 429 | `RATE_LIMITED` | Too many requests. Limit is 30 requests per minute per API key |
 | 502 | `BILLING_ERROR` | Payment issue on the messaging provider side |
@@ -119,11 +201,37 @@ Each recipient in the `to` field has the following structure:
 ```json
 {
   "ok": false,
-  "error": "VALIDATION_ERROR",
-  "message": "Field 'template_id' is required"
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "params contains empty strings. Either provide actual values or omit the params field entirely.",
+    "status": 422
+  }
+}
+```
+
+### Provider error (PROVIDER_ERROR)
+
+When a `PROVIDER_ERROR` occurs, the response includes a `provider_response` field with the raw error from Meta or GupShup. Use it for debugging:
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "PROVIDER_ERROR",
+    "message": "Request failed with status code 400",
+    "status": 502
+  },
+  "provider_response": {
+    "error": {
+      "message": "(#100) Invalid parameter",
+      "type": "OAuthException",
+      "code": 100
+    }
+  }
 }
 ```
 
 <Callout title="Tip">
-  If you receive a `PROVIDER_ERROR`, check that the template is approved, the phone number is valid, and your WABA account is in good standing.
+  If you receive a `PROVIDER_ERROR`, check the `provider_response` field — it contains the exact error reason from Meta/GupShup. Make sure the template is approved, the phone number is valid, and the number of values in `params` matches the variables in the template.
 </Callout>
+

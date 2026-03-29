@@ -11,6 +11,7 @@ import { Steps, Step } from 'fumadocs-ui/components/steps';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { ApiPlayground } from '@/components/api-playground';
 
 export default async function Page(props: {
   params: Promise<{ lang: string; slug?: string[] }>;
@@ -27,17 +28,11 @@ export default async function Page(props: {
     <DocsPage
       toc={data.toc}
       full={data.full}
-      editOnGithub={{
-        repo: 'pleep-docs',
-        owner: 'markushha',
-        sha: 'main',
-        path: `content/docs/${page.file.path}`,
-      }}
     >
       <DocsTitle>{data.title}</DocsTitle>
       <DocsDescription>{data.description}</DocsDescription>
       <DocsBody>
-        <MDX components={{ ...defaultMdxComponents, Steps, Step, Callout, Card, Cards, Tab, Tabs }} />
+        <MDX components={{ ...defaultMdxComponents, Steps, Step, Callout, Card, Cards, Tab, Tabs, ApiPlayground }} />
       </DocsBody>
     </DocsPage>
   );

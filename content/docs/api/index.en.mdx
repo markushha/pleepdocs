@@ -14,8 +14,8 @@ The Pleep Public API lets you integrate Pleep's messaging capabilities into your
 
 ## Getting started
 
-1. [Create an API key](/docs/api/api-keys) in the dashboard
-2. Review the [Send Template Message](/docs/api/send-template) endpoint documentation
+1. [Create an API key](/en/api/api-keys) in your personal cabinet
+2. Review the [Send Template Message](/en/api/send-template) endpoint documentation
 3. Make your first API call
 
 <Callout title="API version">
@@ -24,7 +24,7 @@ The Pleep Public API lets you integrate Pleep's messaging capabilities into your
 
 ## Authentication
 
-All API requests require an API key passed in the `X-API-Key` header. You can create and manage API keys in the dashboard under **Settings** → **API Keys**, or at the `/api-keys` page.
+All API requests require an API key passed in the `X-API-Key` header. You can create and manage API keys in your [personal cabinet → Developers](https://app.pleep.app/dashboard?cabinet=developers).
 
 ```
 X-API-Key: your-api-key
@@ -43,5 +43,5 @@ The API allows **30 requests per minute** per API key. If you exceed this limit,
 All API requests should be sent to your Pleep instance's base URL:
 
 ```
-https://app.pleep.app/api/v1/
+https://microservice.pleep.app/api/v1/
 ```

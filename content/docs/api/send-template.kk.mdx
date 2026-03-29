@@ -8,7 +8,7 @@ WhatsApp үлгі хабарламасын бір немесе бірнеше т
 ## Эндпоинт
 
 ```
-POST /api/v1/messages/send-template
+POST https://microservice.pleep.app/api/v1/messages/send-template
 ```
 
 ## Тақырыптар
@@ -18,14 +18,67 @@ POST /api/v1/messages/send-template
 | `X-API-Key` | Сіздің API кілтіңіз | Иә |
 | `Content-Type` | `application/json` | Иә |
 
+<ApiPlayground lang="kk" />
+
+## Бастамас бұрын
+
+Сұраным жібермес бұрын бірнеше параметрді жинау керек: үлгі, Bot ID және арна. Төмендегі қадамдарды орындаңыз.
+
+### 1-қадам. Үлгі жасаңыз
+
+AI-агентіңізге өтіп, сол жақ мәзірде **Жіберулер** тармағын таңдаңыз.
+
+![Жіберулер бөлімі](/images/api/broadcasts-section.png)
+
+Егер үлгіңіз жоқ болса, **Жіберу жасау** батырмасын басып, үлгі жасаңыз. Үлгі мәтінінде `{{1}}`, `{{2}}` т.б. айнымалыларды қолдануға болады — мысалы, клиентке аты бойынша жүгіну үшін. Айнымалылары бар үлгілерді **тек API арқылы** жіберуге болады.
+
+![Айнымалылары бар үлгі жасау](/images/api/create-template.png)
+
+Жасалғаннан кейін үлгі Meta-ға тексеруге жіберіледі. **Мақұлданды** мәртебесін күтіңіз — тек содан кейін үлгіні жіберу үшін пайдалануға болады.
+
+Үлгілер туралы толығырақ [Жіберулер → Үлгілер](/kk/broadcasts/templates) бөлімінде оқыңыз.
+
+### 2-қадам. Template ID көшіріңіз
+
+**Жіберулер** бөлімінде **Менің үлгілерім** блогын табыңыз. Қажет үлгіні таңдап, Template ID мәтінін басыңыз — ол автоматты түрде алмасу буферіне көшіріледі.
+
+![Template ID көшіру](/images/api/copy-template-id.png)
+
+### 3-қадам. Bot ID табыңыз
+
+**Интеграциялар** бөліміне өтіп, WhatsApp Business интеграцияңызды таңдап, **Басқару** батырмасын басыңыз. Интеграция бетінде **Bot ID** өрісін көресіз — көшіру белгішесін басыңыз, Bot ID автоматты түрде көшіріледі.
+
+![Интеграция баптауларындағы Bot ID](/images/api/bot-id.png)
+
+### 4-қадам. Арнаны анықтаңыз
+
+`channel` өрісінің мәні WhatsApp интеграция түріне байланысты:
+
+<Tabs items={["waba_coexistence", "waba"]}>
+<Tab value="waba_coexistence">
+
+Жіберулер бөлімінде **WhatsApp Business** қойындысын көрсеңіз — `waba_coexistence` арнасын қолданыңыз. Бұл Pleep арқылы жаңа интеграция (Meta Cloud API).
+
+![WhatsApp Business tab](/images/api/channel-waba-coexistence.png)
+
+</Tab>
+<Tab value="waba">
+
+Жіберулер бөлімінде **WABA (Gupshup)** қойындысын көрсеңіз — `waba` арнасын қолданыңыз. Бұл GupShup арқылы ескі интеграция.
+
+![WABA Gupshup tab](/images/api/channel-waba-gupshup.png)
+
+</Tab>
+</Tabs>
+
 ## Сұраным денесі
 
 | Өріс | Тип | Міндетті | Сипаттама |
 |------|-----|----------|-----------|
-| `bot_id` | string | Иә | Бот UUID. Жеке кабинеттегі интеграция баптауларында табылады |
-| `channel` | string | Иә | Жіберу арнасы: `waba` немесе `waba_coexistence` |
+| `bot_id` | string | Иә | Бот UUID. Интеграция баптауларынан көшіріңіз (3-қадам) |
+| `channel` | string | Иә | Жіберу арнасы: `waba` немесе `waba_coexistence` (4-қадам) |
 | `to` | object немесе array | Иә | Бір алушы немесе алушылар массиві |
-| `template_id` | string | Иә | Үлгі идентификаторы. **Жіберулер** бөліміндегі үлгі ақпаратынан көшіріңіз |
+| `template_id` | string | Иә | Үлгі идентификаторы. Жіберулер бөлімінен көшіріңіз (2-қадам) |
 | `template_language` | string | Жоқ | Үлгі тілінің коды. Әдепкі мәні `ru` |
 
 ### Алушы нысаны
@@ -37,20 +90,39 @@ POST /api/v1/messages/send-template
 | `phone` | string | Иә | Халықаралық форматтағы телефон нөмірі (мысалы, `+77001234567`) |
 | `params` | array | Жоқ | Осы алушы үшін үлгі айнымалы мәндері (мысалы, клиент аты) |
 
+### `params` қолдану ережелері
+
+- `params` — **міндетті емес өріс**. Тек үлгіде айнымалылар болған кезде ғана көрсетіңіз (`{{1}}`, `{{2}}` т.б.)
+- Егер үлгіде **айнымалылар жоқ** болса — `params` өрісін **мүлдем жібермеңіз**
+- `params` ішіндегі бос жолдарға **тыйым салынады** — `"params": [""]` жіберсеңіз API `422 VALIDATION_ERROR` қатесін қайтарады
+- Бос массив `"params": []` параметрлердің жоқтығы ретінде өңделеді
+
 ## Мысалдар
 
-### Бір алушы
+### Айнымалылары бар үлгі
 
 ```json
 {
-  "bot_id": "your-bot-uuid",
+  "bot_id": "your-bot-id",
   "channel": "waba_coexistence",
   "to": {
     "phone": "+77001234567",
-    "params": ["Иван"]
+    "params": ["Иван", "25.03.2026"]
   },
-  "template_id": "welcome_template",
-  "template_language": "ru"
+  "template_id": "welcome_template"
+}
+```
+
+### Айнымалылары жоқ үлгі
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "to": {
+    "phone": "+77001234567"
+  },
+  "template_id": "simple_greeting"
 }
 ```
 
@@ -58,17 +130,27 @@ POST /api/v1/messages/send-template
 
 ```json
 {
-  "bot_id": "your-bot-uuid",
-  "channel": "waba",
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
   "to": [
     { "phone": "+77001234567", "params": ["Иван"] },
     { "phone": "+77009876543", "params": ["Мария"] },
-    { "phone": "+77005551234" }
+    { "phone": "+77005551234", "params": ["Алексей"] }
   ],
   "template_id": "welcome_template",
-  "template_language": "en"
+  "template_language": "ru"
 }
 ```
+
+<Callout title="Қате: params ішіндегі бос жолдар">
+Келесі сұраным `422` қатесін қайтарады. Егер үлгіде айнымалылар жоқ болса, `params` өрісін жібермеңіз:
+
+```json
+{
+  "to": { "phone": "+77001234567", "params": [""] }
+}
+```
+</Callout>
 
 ## Жауаптар
 
@@ -108,7 +190,7 @@ POST /api/v1/messages/send-template
 | 401 | `UNAUTHORIZED` | API кілті жоқ немесе жарамсыз |
 | 403 | `FORBIDDEN` | API кілтінің бұл ботқа қатынасы жоқ |
 | 404 | `BOT_NOT_FOUND` | Көрсетілген `bot_id` жоқ |
-| 422 | `VALIDATION_ERROR` | Жарамсыз сұраным денесі (өрістер жоқ, қате формат) |
+| 422 | `VALIDATION_ERROR` | Жарамсыз сұраным денесі (өрістер жоқ, қате формат, params ішіндегі бос жолдар) |
 | 429 | `QUOTA_EXCEEDED` | Айлық хабарлама квотасы таусылды |
 | 429 | `RATE_LIMITED` | Сұранымдар тым көп. Лимит — API кілтіне минутына 30 сұраным |
 | 502 | `BILLING_ERROR` | Провайдер жағындағы төлем мәселесі |
@@ -119,11 +201,37 @@ POST /api/v1/messages/send-template
 ```json
 {
   "ok": false,
-  "error": "VALIDATION_ERROR",
-  "message": "Өріс 'template_id' міндетті"
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "params contains empty strings. Either provide actual values or omit the params field entirely.",
+    "status": 422
+  }
+}
+```
+
+### Провайдер қатесі (PROVIDER_ERROR)
+
+`PROVIDER_ERROR` қатесі кезінде жауапта Meta немесе GupShup-тан бастапқы қате бар `provider_response` өрісі болады. Оны отладка үшін пайдаланыңыз:
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "PROVIDER_ERROR",
+    "message": "Request failed with status code 400",
+    "status": 502
+  },
+  "provider_response": {
+    "error": {
+      "message": "(#100) Invalid parameter",
+      "type": "OAuthException",
+      "code": 100
+    }
+  }
 }
 ```
 
 <Callout title="Кеңес">
-  `PROVIDER_ERROR` қатесін алсаңыз, үлгінің мақұлданғанын, телефон нөмірінің дұрыс екенін және WABA аккаунтыңыздың жақсы жағдайда екенін тексеріңіз.
+  `PROVIDER_ERROR` алсаңыз, `provider_response` өрісін тексеріңіз — онда Meta/GupShup-тан нақты қате себебі бар. Үлгінің мақұлданғанын, телефон нөмірінің дұрыс екенін және `params` ішіндегі мәндер санының үлгідегі айнымалылар санымен сәйкес келетінін тексеріңіз.
 </Callout>
+
