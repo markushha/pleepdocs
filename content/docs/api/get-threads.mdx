@@ -1,0 +1,270 @@
+---
+title: Получение диалогов
+description: Получение WhatsApp диалогов по номерам телефонов или диапазону дат через API Pleep
+---
+
+Получение WhatsApp диалогов по номерам телефонов или диапазону дат. Основной сценарий использования — анализ диалогов после рассылки шаблонных сообщений.
+
+## Эндпоинт
+
+```
+POST https://microservice.pleep.app/api/v1/messages/get-threads
+```
+
+## Заголовки
+
+| Заголовок | Значение | Обязательный |
+|-----------|----------|--------------|
+| `X-API-Key` | Ваш API-ключ | Да |
+| `Content-Type` | `application/json` | Да |
+
+## Тело запроса
+
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| `bot_id` | string | Да | UUID бота. Скопируйте из настроек интеграции |
+| `channel` | string | Да | Канал: `waba` или `waba_coexistence` |
+| `phones` | string[] | Нет | Номера телефонов для поиска (максимум 500) |
+| `created_after` | string | Нет | Фильтр по дате создания диалога (формат ISO 8601, например `2026-03-01T00:00:00Z`) |
+| `created_before` | string | Нет | Фильтр по дате создания диалога (формат ISO 8601) |
+| `messages_limit` | integer | Нет | Максимум сообщений в каждом диалоге. По умолчанию `100`, максимум `500` |
+| `cursor` | string | Нет | Курсор пагинации (только для запросов по датам) |
+| `limit` | integer | Нет | Количество диалогов на страницу (только для запросов по датам). По умолчанию `100`, максимум `200` |
+
+### Правила валидации
+
+- Необходимо указать **хотя бы одно** из двух: непустой массив `phones` **или** поле `created_after`
+- Если не указано ни одно из этих полей, API вернёт ошибку `422 VALIDATION_ERROR`
+
+## Пагинация
+
+Поведение зависит от способа запроса:
+
+**По номерам телефонов (`phones`)** — все найденные диалоги возвращаются в одном ответе (максимум 500). Номера, для которых диалог не найден, перечислены в массиве `not_found`.
+
+**По датам (без `phones`)** — используется курсорная пагинация. Если есть ещё страницы, в ответе `has_more: true` и заполнено поле `next_cursor`. Передайте значение `next_cursor` в поле `cursor` следующего запроса.
+
+## Примеры запросов
+
+### Запрос по номерам телефонов
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "phones": ["+77001234567", "+77009876543", "+77005551234"],
+  "messages_limit": 50
+}
+```
+
+### Запрос по диапазону дат
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "created_after": "2026-03-01T00:00:00Z",
+  "created_before": "2026-03-03T00:00:00Z",
+  "limit": 50
+}
+```
+
+### curl
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_ваш_ключ" \
+  -d '{
+    "bot_id": "your-bot-id",
+    "channel": "waba_coexistence",
+    "phones": ["+77001234567", "+77009876543", "+77005551234"],
+    "messages_limit": 50
+  }'
+```
+
+## Ответы
+
+### Поля ответа
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `threads` | array | Массив найденных диалогов |
+| `threads[].phone` | string | Номер телефона |
+| `threads[].thread_id` | string | Уникальный идентификатор диалога |
+| `threads[].created_at` | string | Дата создания диалога (ISO 8601) |
+| `threads[].updated_at` | string | Дата последней активности (ISO 8601) |
+| `threads[].message_handler` | string | Кто обрабатывает диалог: `AI` или `OPERATOR` |
+| `threads[].messages` | array | Массив сообщений в хронологическом порядке |
+| `threads[].messages[].id` | string | Идентификатор сообщения |
+| `threads[].messages[].role` | string | Роль отправителя: `AI`, `USER` или `OPERATOR` |
+| `threads[].messages[].text` | string | Текст сообщения |
+| `threads[].messages[].created_at` | string | Дата отправки (ISO 8601) |
+| `not_found` | string[] | Номера, для которых диалог не найден (только при запросе по `phones`) |
+| `has_more` | boolean | `true`, если есть ещё страницы |
+| `next_cursor` | string | Курсор для получения следующей страницы |
+
+### По номерам телефонов — успех
+
+```json
+{
+  "ok": true,
+  "data": {
+    "threads": [
+      {
+        "phone": "+77001234567",
+        "thread_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "created_at": "2026-03-01T10:30:00Z",
+        "updated_at": "2026-03-01T10:45:00Z",
+        "message_handler": "AI",
+        "messages": [
+          {
+            "id": "msg_001",
+            "role": "AI",
+            "text": "Здравствуйте, Иван! Мы подготовили для вас специальное предложение.",
+            "created_at": "2026-03-01T10:30:00Z"
+          },
+          {
+            "id": "msg_002",
+            "role": "USER",
+            "text": "Расскажите подробнее",
+            "created_at": "2026-03-01T10:35:00Z"
+          },
+          {
+            "id": "msg_003",
+            "role": "AI",
+            "text": "Конечно! Сейчас у нас действует скидка 20% на все тарифы.",
+            "created_at": "2026-03-01T10:35:30Z"
+          }
+        ]
+      },
+      {
+        "phone": "+77009876543",
+        "thread_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "created_at": "2026-03-01T11:00:00Z",
+        "updated_at": "2026-03-01T11:20:00Z",
+        "message_handler": "OPERATOR",
+        "messages": [
+          {
+            "id": "msg_004",
+            "role": "AI",
+            "text": "Добрый день, Мария! У нас для вас новость.",
+            "created_at": "2026-03-01T11:00:00Z"
+          },
+          {
+            "id": "msg_005",
+            "role": "USER",
+            "text": "Хочу поговорить с менеджером",
+            "created_at": "2026-03-01T11:10:00Z"
+          },
+          {
+            "id": "msg_006",
+            "role": "OPERATOR",
+            "text": "Здравствуйте! Меня зовут Алексей, чем могу помочь?",
+            "created_at": "2026-03-01T11:15:00Z"
+          }
+        ]
+      }
+    ],
+    "not_found": ["+77005551234"],
+    "has_more": false,
+    "next_cursor": null
+  }
+}
+```
+
+### По датам с пагинацией
+
+```json
+{
+  "ok": true,
+  "data": {
+    "threads": [
+      {
+        "phone": "+77001112233",
+        "thread_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+        "created_at": "2026-03-01T08:00:00Z",
+        "updated_at": "2026-03-01T08:30:00Z",
+        "message_handler": "AI",
+        "messages": [
+          {
+            "id": "msg_007",
+            "role": "AI",
+            "text": "Здравствуйте! Готовы обсудить ваш заказ?",
+            "created_at": "2026-03-01T08:00:00Z"
+          }
+        ]
+      }
+    ],
+    "not_found": [],
+    "has_more": true,
+    "next_cursor": "eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0wMVQwODowMDowMFoiLCJpZCI6ImMzZDRlNWY2In0="
+  }
+}
+```
+
+Для получения следующей страницы передайте `next_cursor` в поле `cursor`:
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "created_after": "2026-03-01T00:00:00Z",
+  "created_before": "2026-03-03T00:00:00Z",
+  "cursor": "eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0wMVQwODowMDowMFoiLCJpZCI6ImMzZDRlNWY2In0=",
+  "limit": 50
+}
+```
+
+## Коды ошибок
+
+| HTTP-статус | Код ошибки | Описание |
+|-------------|------------|----------|
+| 401 | `UNAUTHORIZED` | Отсутствует или недействителен API-ключ |
+| 403 | `FORBIDDEN` | API-ключ не имеет доступа к этому боту |
+| 404 | `BOT_NOT_FOUND` | Указанный `bot_id` не существует |
+| 422 | `VALIDATION_ERROR` | Некорректное тело запроса (не указаны `phones` или `created_after`, превышен лимит и т.д.) |
+| 429 | `RATE_LIMITED` | Слишком много запросов. Лимит — 30 запросов в минуту на API-ключ |
+
+### Ошибка: не указаны фильтры
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "At least one of 'phones' (non-empty) or 'created_after' must be provided.",
+    "status": 422
+  }
+}
+```
+
+### Ошибка: бот не найден
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "BOT_NOT_FOUND",
+    "message": "Bot with the specified bot_id was not found.",
+    "status": 404
+  }
+}
+```
+
+### Ошибка: авторизация
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid or missing API key.",
+    "status": 401
+  }
+}
+```
+
+<Callout title="Типичный сценарий использования">
+  Отправьте шаблонные сообщения через [POST /api/v1/messages/send-template](/ru/api/send-template), подождите 1–2 дня, затем вызовите этот эндпоинт с теми же номерами телефонов, чтобы получить все диалоги для анализа.
+</Callout>

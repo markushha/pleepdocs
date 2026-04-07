@@ -1,0 +1,270 @@
+---
+title: Get Conversation Threads
+description: Retrieve WhatsApp conversation threads by phone numbers or date range via the Pleep API
+---
+
+Retrieve WhatsApp conversation threads by phone numbers or date range. The primary use case is analyzing conversations after sending a batch of template messages.
+
+## Endpoint
+
+```
+POST https://microservice.pleep.app/api/v1/messages/get-threads
+```
+
+## Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `X-API-Key` | Your API key | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `bot_id` | string | Yes | Bot UUID. Copy from integration settings |
+| `channel` | string | Yes | Channel: `waba` or `waba_coexistence` |
+| `phones` | string[] | No | Phone numbers to look up (max 500) |
+| `created_after` | string | No | Filter threads created after this date (ISO 8601, e.g. `2026-03-01T00:00:00Z`) |
+| `created_before` | string | No | Filter threads created before this date (ISO 8601) |
+| `messages_limit` | integer | No | Max messages per thread. Default `100`, max `500` |
+| `cursor` | string | No | Pagination cursor (date-only queries) |
+| `limit` | integer | No | Threads per page (date-only queries). Default `100`, max `200` |
+
+### Validation rules
+
+- You must provide **at least one** of: a non-empty `phones` array **or** `created_after`
+- If neither is provided, the API returns a `422 VALIDATION_ERROR`
+
+## Pagination
+
+Behavior depends on how you query:
+
+**By phone numbers (`phones`)** — all matching threads are returned in a single response (max 500). Phone numbers with no matching thread are listed in the `not_found` array.
+
+**By dates (no `phones`)** — cursor-based pagination is used. If more pages exist, the response includes `has_more: true` and a `next_cursor` value. Pass `next_cursor` as the `cursor` field in your next request.
+
+## Request examples
+
+### Query by phone numbers
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "phones": ["+77001234567", "+77009876543", "+77005551234"],
+  "messages_limit": 50
+}
+```
+
+### Query by date range
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "created_after": "2026-03-01T00:00:00Z",
+  "created_before": "2026-03-03T00:00:00Z",
+  "limit": 50
+}
+```
+
+### curl
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_your_key" \
+  -d '{
+    "bot_id": "your-bot-id",
+    "channel": "waba_coexistence",
+    "phones": ["+77001234567", "+77009876543", "+77005551234"],
+    "messages_limit": 50
+  }'
+```
+
+## Responses
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `threads` | array | Array of matching threads |
+| `threads[].phone` | string | Phone number |
+| `threads[].thread_id` | string | Unique thread identifier |
+| `threads[].created_at` | string | Thread creation timestamp (ISO 8601) |
+| `threads[].updated_at` | string | Last activity timestamp (ISO 8601) |
+| `threads[].message_handler` | string | Who is handling the thread: `AI` or `OPERATOR` |
+| `threads[].messages` | array | Messages in chronological order |
+| `threads[].messages[].id` | string | Message identifier |
+| `threads[].messages[].role` | string | Sender role: `AI`, `USER`, or `OPERATOR` |
+| `threads[].messages[].text` | string | Message text |
+| `threads[].messages[].created_at` | string | Sent timestamp (ISO 8601) |
+| `not_found` | string[] | Phones with no matching thread (only when `phones` filter is used) |
+| `has_more` | boolean | `true` if more pages exist |
+| `next_cursor` | string | Cursor to fetch the next page |
+
+### By phone numbers — success
+
+```json
+{
+  "ok": true,
+  "data": {
+    "threads": [
+      {
+        "phone": "+77001234567",
+        "thread_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "created_at": "2026-03-01T10:30:00Z",
+        "updated_at": "2026-03-01T10:45:00Z",
+        "message_handler": "AI",
+        "messages": [
+          {
+            "id": "msg_001",
+            "role": "AI",
+            "text": "Hello John! We have a special offer for you.",
+            "created_at": "2026-03-01T10:30:00Z"
+          },
+          {
+            "id": "msg_002",
+            "role": "USER",
+            "text": "Tell me more",
+            "created_at": "2026-03-01T10:35:00Z"
+          },
+          {
+            "id": "msg_003",
+            "role": "AI",
+            "text": "We currently have a 20% discount on all plans.",
+            "created_at": "2026-03-01T10:35:30Z"
+          }
+        ]
+      },
+      {
+        "phone": "+77009876543",
+        "thread_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "created_at": "2026-03-01T11:00:00Z",
+        "updated_at": "2026-03-01T11:20:00Z",
+        "message_handler": "OPERATOR",
+        "messages": [
+          {
+            "id": "msg_004",
+            "role": "AI",
+            "text": "Good afternoon Sarah! We have news for you.",
+            "created_at": "2026-03-01T11:00:00Z"
+          },
+          {
+            "id": "msg_005",
+            "role": "USER",
+            "text": "I want to speak with a manager",
+            "created_at": "2026-03-01T11:10:00Z"
+          },
+          {
+            "id": "msg_006",
+            "role": "OPERATOR",
+            "text": "Hello! My name is Alex, how can I help?",
+            "created_at": "2026-03-01T11:15:00Z"
+          }
+        ]
+      }
+    ],
+    "not_found": ["+77005551234"],
+    "has_more": false,
+    "next_cursor": null
+  }
+}
+```
+
+### By dates with pagination
+
+```json
+{
+  "ok": true,
+  "data": {
+    "threads": [
+      {
+        "phone": "+77001112233",
+        "thread_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+        "created_at": "2026-03-01T08:00:00Z",
+        "updated_at": "2026-03-01T08:30:00Z",
+        "message_handler": "AI",
+        "messages": [
+          {
+            "id": "msg_007",
+            "role": "AI",
+            "text": "Hello! Ready to discuss your order?",
+            "created_at": "2026-03-01T08:00:00Z"
+          }
+        ]
+      }
+    ],
+    "not_found": [],
+    "has_more": true,
+    "next_cursor": "eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0wMVQwODowMDowMFoiLCJpZCI6ImMzZDRlNWY2In0="
+  }
+}
+```
+
+To fetch the next page, pass `next_cursor` as `cursor`:
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "created_after": "2026-03-01T00:00:00Z",
+  "created_before": "2026-03-03T00:00:00Z",
+  "cursor": "eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0wMVQwODowMDowMFoiLCJpZCI6ImMzZDRlNWY2In0=",
+  "limit": 50
+}
+```
+
+## Error codes
+
+| HTTP Status | Error Code | Description |
+|-------------|------------|-------------|
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | API key does not have access to this bot |
+| 404 | `BOT_NOT_FOUND` | The specified `bot_id` does not exist |
+| 422 | `VALIDATION_ERROR` | Invalid request body (no filters provided, limit exceeded, etc.) |
+| 429 | `RATE_LIMITED` | Too many requests. Limit is 30 requests per minute per API key |
+
+### Error: no filters provided
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "At least one of 'phones' (non-empty) or 'created_after' must be provided.",
+    "status": 422
+  }
+}
+```
+
+### Error: bot not found
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "BOT_NOT_FOUND",
+    "message": "Bot with the specified bot_id was not found.",
+    "status": 404
+  }
+}
+```
+
+### Error: authentication failure
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid or missing API key.",
+    "status": 401
+  }
+}
+```
+
+<Callout title="Typical use case">
+  Send template messages via [POST /api/v1/messages/send-template](/en/api/send-template), wait 1–2 days, then call this endpoint with the same phone numbers to retrieve all conversations for analysis.
+</Callout>
