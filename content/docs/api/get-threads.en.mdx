@@ -5,6 +5,10 @@ description: Retrieve WhatsApp conversation threads by phone numbers or date ran
 
 Retrieve WhatsApp conversation threads by phone numbers or date range. The primary use case is analyzing conversations after sending a batch of template messages.
 
+<Callout type="warn" title="thread_id format changed">
+  This endpoint used to return an internal identifier in `thread_id` that matched nothing else in Pleep. It now returns the shared conversation identifier, `thread_<uuid>` — the same value used in the monitor link, in inbound webhook bodies, in outgoing webhook payloads and in the Custom Tool auto-fill. If you stored the old values, re-fetch them.
+</Callout>
+
 ## Endpoint
 
 ```
@@ -28,7 +32,7 @@ POST https://microservice.pleep.app/api/v1/messages/get-threads
 | `created_after` | string | No | Filter threads created after this date (ISO 8601, e.g. `2026-03-01T00:00:00Z`) |
 | `created_before` | string | No | Filter threads created before this date (ISO 8601) |
 | `messages_limit` | integer | No | Max messages per thread. Default `100`, max `500` |
-| `cursor` | string | No | Pagination cursor (date-only queries) |
+| `cursor` | string | No | Pagination cursor (date-only queries). This is the `next_cursor` from the previous response, i.e. the `thread_id` of the last thread on that page |
 | `limit` | integer | No | Threads per page (date-only queries). Default `100`, max `200` |
 
 ### Validation rules
@@ -91,10 +95,15 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
 |-------|------|-------------|
 | `threads` | array | Array of matching threads |
 | `threads[].phone` | string | Phone number |
-| `threads[].thread_id` | string | Unique thread identifier |
+| `threads[].thread_id` | string | Conversation identifier, `thread_<uuid>`. The same value everywhere in Pleep: the monitor link, inbound and outgoing webhooks, and the Custom Tool auto-fill |
 | `threads[].created_at` | string | Thread creation timestamp (ISO 8601) |
 | `threads[].updated_at` | string | Last activity timestamp (ISO 8601) |
 | `threads[].message_handler` | string | Who is handling the thread: `AI` or `OPERATOR` |
+| `threads[].lead_status` | object \| null | Current funnel stage. `null` when the lead has no stage yet |
+| `threads[].lead_status.id` | string | Stage id, the same one [`set-status`](/en/api/leads) accepts |
+| `threads[].lead_status.name` | string | Stage name as it appears in the funnel |
+| `threads[].lead_status.kind` | string | Stage type: `active`, `qualified`, `awaiting_payment`, `success` or `failure` |
+| `threads[].lead_status.order` | integer | Stage position in the funnel |
 | `threads[].messages` | array | Messages in chronological order |
 | `threads[].messages[].id` | string | Message identifier |
 | `threads[].messages[].role` | string | Sender role: `AI`, `USER`, or `OPERATOR` |
@@ -102,7 +111,7 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
 | `threads[].messages[].created_at` | string | Sent timestamp (ISO 8601) |
 | `not_found` | string[] | Phones with no matching thread (only when `phones` filter is used) |
 | `has_more` | boolean | `true` if more pages exist |
-| `next_cursor` | string | Cursor to fetch the next page |
+| `next_cursor` | string \| null | Cursor for the next page: the `thread_id` of the last thread on this one. `null` when no pages remain |
 
 ### By phone numbers — success
 
@@ -113,10 +122,16 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
     "threads": [
       {
         "phone": "+77001234567",
-        "thread_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "thread_id": "thread_a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "created_at": "2026-03-01T10:30:00Z",
         "updated_at": "2026-03-01T10:45:00Z",
         "message_handler": "AI",
+        "lead_status": {
+          "id": "7f3a1c20-1111-2222-3333-444455556666",
+          "name": "Proposal sent",
+          "kind": "active",
+          "order": 4
+        },
         "messages": [
           {
             "id": "msg_001",
@@ -140,10 +155,16 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
       },
       {
         "phone": "+77009876543",
-        "thread_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "thread_id": "thread_b2c3d4e5-f6a7-8901-bcde-f12345678901",
         "created_at": "2026-03-01T11:00:00Z",
         "updated_at": "2026-03-01T11:20:00Z",
         "message_handler": "OPERATOR",
+        "lead_status": {
+          "id": "9c8b7a60-7777-8888-9999-000011112222",
+          "name": "Won",
+          "kind": "success",
+          "order": 10
+        },
         "messages": [
           {
             "id": "msg_004",
@@ -182,10 +203,11 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
     "threads": [
       {
         "phone": "+77001112233",
-        "thread_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+        "thread_id": "thread_c3d4e5f6-a7b8-9012-cdef-123456789012",
         "created_at": "2026-03-01T08:00:00Z",
         "updated_at": "2026-03-01T08:30:00Z",
         "message_handler": "AI",
+        "lead_status": null,
         "messages": [
           {
             "id": "msg_007",
@@ -198,7 +220,7 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
     ],
     "not_found": [],
     "has_more": true,
-    "next_cursor": "eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0wMVQwODowMDowMFoiLCJpZCI6ImMzZDRlNWY2In0="
+    "next_cursor": "thread_c3d4e5f6-a7b8-9012-cdef-123456789012"
   }
 }
 ```
@@ -211,7 +233,7 @@ To fetch the next page, pass `next_cursor` as `cursor`:
   "channel": "waba_coexistence",
   "created_after": "2026-03-01T00:00:00Z",
   "created_before": "2026-03-03T00:00:00Z",
-  "cursor": "eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0wMVQwODowMDowMFoiLCJpZCI6ImMzZDRlNWY2In0=",
+  "cursor": "thread_c3d4e5f6-a7b8-9012-cdef-123456789012",
   "limit": 50
 }
 ```

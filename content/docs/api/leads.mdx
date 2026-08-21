@@ -1,0 +1,202 @@
+---
+title: Этапы лида
+description: Чтение и изменение этапа лида в воронке Pleep по идентификатору диалога
+---
+
+Чтение и изменение этапа лида в воронке Pleep по идентификатору диалога. Используйте, чтобы держать воронку Pleep в согласии с вашей учётной системой: например, переводить лид на «Продажу», когда оплата подтвердилась на вашей стороне.
+
+<Callout title="Какой идентификатор передавать">
+  Везде используется `thread_id` вида `thread_<uuid>` — тот же, что возвращает [`get-threads`](/ru/api/get-threads), что стоит в ссылке на диалог в мониторе и что подставляется в Custom Tool через «Автозаполнение».
+</Callout>
+
+## Эндпоинты
+
+```
+POST https://microservice.pleep.app/api/v1/leads/get-statuses
+POST https://microservice.pleep.app/api/v1/leads/get-lead
+POST https://microservice.pleep.app/api/v1/leads/set-status
+```
+
+## Заголовки
+
+| Заголовок | Значение | Обязательный |
+|-----------|----------|--------------|
+| `X-API-Key` | Ваш API-ключ | Да |
+| `Content-Type` | `application/json` | Да |
+
+## Лимиты запросов
+
+Методы этапов лида допускают **60 запросов в минуту** на один API-ключ. Это отдельный лимит: у остальных методов API он равен 30.
+
+## get-statuses
+
+Возвращает воронку целиком: идентификаторы и названия этапов. Вызовите один раз, сохраните соответствие этапов у себя и дальше работайте по `id`.
+
+### Тело запроса
+
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| `assistant_id` | string | Нет | Нужен, только если на API-ключ заведено несколько агентов. При одном агенте не передавайте |
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/leads/get-statuses \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_ваш_ключ" \
+  -d '{}'
+```
+
+### Ответ
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `statuses[].id` | string | Идентификатор этапа |
+| `statuses[].name` | string | Название этапа |
+| `statuses[].kind` | string | Тип этапа: `active`, `qualified`, `awaiting_payment`, `success` или `failure` |
+| `statuses[].order` | integer | Позиция в воронке |
+| `statuses[].description` | string \| null | Пояснение, когда лид должен попадать на этот этап |
+| `statuses[].ai_enabled` | boolean | `false`, если на этом этапе AI-агент не отвечает на входящие |
+| `statuses[].ai_transition_locked` | boolean | `true`, если агенту запрещено уводить лид с этого этапа |
+
+```json
+{
+  "ok": true,
+  "data": {
+    "assistant_id": "6cc47669-8659-40ad-9d4d-bf914323120d",
+    "statuses": [
+      {
+        "id": "1a2b3c4d-0000-1111-2222-333344445555",
+        "name": "Новое обращение",
+        "kind": "active",
+        "order": 0,
+        "description": null,
+        "ai_enabled": true,
+        "ai_transition_locked": false
+      },
+      {
+        "id": "9c8b7a60-7777-8888-9999-000011112222",
+        "name": "Продажа",
+        "kind": "success",
+        "order": 10,
+        "description": "Оплата подтверждена",
+        "ai_enabled": false,
+        "ai_transition_locked": true
+      }
+    ]
+  }
+}
+```
+
+## get-lead
+
+Текущий этап одного диалога.
+
+### Тело запроса
+
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| `thread_id` | string | Да | Идентификатор диалога вида `thread_<uuid>` |
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/leads/get-lead \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_ваш_ключ" \
+  -d '{"thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5"}'
+```
+
+### Ответ
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `thread_id` | string | Идентификатор диалога |
+| `assistant_id` | string | Идентификатор агента |
+| `channel` | string | Канал диалога, например `WABA_COEXISTENCE` |
+| `phone` | string \| null | Номер клиента, если у канала он есть |
+| `message_handler` | string | Кто ведёт диалог: `AI` или `OPERATOR` |
+| `status` | object \| null | Текущий этап. `null`, если этап не присвоен |
+| `status_set_at` | string \| null | Когда этап был установлен (ISO 8601) |
+| `status_set_by` | string \| null | Кто установил: `AI`, `OPERATOR_MANUAL`, `SCENARIO` или `SYSTEM` |
+
+```json
+{
+  "ok": true,
+  "data": {
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "assistant_id": "6cc47669-8659-40ad-9d4d-bf914323120d",
+    "channel": "WABA_COEXISTENCE",
+    "phone": "77051234567",
+    "message_handler": "AI",
+    "status": {
+      "id": "7f3a1c20-1111-2222-3333-444455556666",
+      "name": "Визит назначен",
+      "kind": "active",
+      "order": 6
+    },
+    "status_set_at": "2026-08-20T10:00:00.000Z",
+    "status_set_by": "AI"
+  }
+}
+```
+
+<Callout title="Не нужно опрашивать по одному">
+  Если вам нужны этапы для многих диалогов сразу, не вызывайте `get-lead` в цикле. [`get-threads`](/ru/api/get-threads) возвращает `lead_status` вместе с каждым диалогом.
+</Callout>
+
+## set-status
+
+Переводит лид на этап. Делает ровно то же, что перетаскивание карточки оператором: карточка двигается на всех открытых досках в реальном времени, и запускаются сценарии, привязанные к этапу.
+
+### Тело запроса
+
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| `thread_id` | string | Да | Идентификатор диалога |
+| `status_id` | string \| null | Одно из двух | Идентификатор этапа. Передайте `null`, чтобы снять этап |
+| `status_name` | string | Одно из двух | Точное название этапа, регистр не важен. Альтернатива `status_id` |
+
+Нужно передать ровно одно из полей `status_id` или `status_name`. Если не передать ни одного, вернётся `422`: отсутствие поля не считается командой «снять этап», иначе ошибка в вашем коде молча стирала бы позицию лида в воронке.
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/leads/set-status \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_ваш_ключ" \
+  -d '{
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "status_id": "9c8b7a60-7777-8888-9999-000011112222"
+  }'
+```
+
+### Ответ
+
+```json
+{
+  "ok": true,
+  "data": {
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "changed": true,
+    "status": {
+      "id": "9c8b7a60-7777-8888-9999-000011112222",
+      "name": "Продажа",
+      "kind": "success",
+      "order": 10
+    }
+  }
+}
+```
+
+Если лид уже находится на этом этапе, вернётся `changed: false` и ничего не произойдёт: ни записи в истории, ни запуска сценариев. Повторная отправка одного и того же запроса безопасна.
+
+### Названия-дубли
+
+Если в воронке несколько этапов с одинаковым названием, `set-status` по `status_name` вернёт `422 STATUS_AMBIGUOUS` вместо того, чтобы выбрать один наугад. В этом случае используйте `status_id`.
+
+## Коды ошибок
+
+| HTTP-статус | Код ошибки | Описание |
+|-------------|------------|----------|
+| 401 | `UNAUTHORIZED` | Отсутствует или недействителен API-ключ |
+| 404 | `THREAD_NOT_FOUND` | Диалога не существует либо он принадлежит другому аккаунту |
+| 404 | `STATUS_NOT_FOUND` | Этапа нет в воронке этого агента |
+| 404 | `ASSISTANT_NOT_FOUND` | Агента не существует либо он принадлежит другому аккаунту |
+| 422 | `STATUS_AMBIGUOUS` | Под `status_name` подходит несколько этапов, используйте `status_id` |
+| 422 | `VALIDATION_ERROR` | Не передано ни `status_id`, ни `status_name`, либо переданы оба |
+| 429 | `RATE_LIMITED` | Слишком много запросов. Лимит — 60 запросов в минуту на API-ключ |

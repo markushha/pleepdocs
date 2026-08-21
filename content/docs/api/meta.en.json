@@ -1,4 +1,10 @@
 {
   "title": "API",
-  "pages": ["send-template", "api-keys"]
+  "pages": [
+    "send-template",
+    "get-threads",
+    "leads",
+    "webhooks-outgoing",
+    "api-keys"
+  ]
 }
