@@ -5,6 +5,10 @@ description: Получение WhatsApp диалогов по номерам т
 
 Получение WhatsApp диалогов по номерам телефонов или диапазону дат. Основной сценарий использования — анализ диалогов после рассылки шаблонных сообщений.
 
+<Callout type="warn" title="Формат thread_id изменился">
+  Раньше метод возвращал в поле `thread_id` внутренний идентификатор, который не совпадал ни с одним другим идентификатором Pleep. Теперь возвращается общий идентификатор диалога вида `thread_<uuid>` — тот же, что в ссылке на диалог в мониторе, в теле входящего вебхука, в payload исходящих вебхуков и в автоподстановке Custom Tool. Если вы сохраняли старые значения у себя, их нужно перезапросить.
+</Callout>
+
 ## Эндпоинт
 
 ```
@@ -28,7 +32,7 @@ POST https://microservice.pleep.app/api/v1/messages/get-threads
 | `created_after` | string | Нет | Фильтр по дате создания диалога (формат ISO 8601, например `2026-03-01T00:00:00Z`) |
 | `created_before` | string | Нет | Фильтр по дате создания диалога (формат ISO 8601) |
 | `messages_limit` | integer | Нет | Максимум сообщений в каждом диалоге. По умолчанию `100`, максимум `500` |
-| `cursor` | string | Нет | Курсор пагинации (только для запросов по датам) |
+| `cursor` | string | Нет | Курсор пагинации (только для запросов по датам). Это значение `next_cursor` из предыдущего ответа, то есть `thread_id` последнего диалога страницы |
 | `limit` | integer | Нет | Количество диалогов на страницу (только для запросов по датам). По умолчанию `100`, максимум `200` |
 
 ### Правила валидации
@@ -91,10 +95,15 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
 |------|-----|----------|
 | `threads` | array | Массив найденных диалогов |
 | `threads[].phone` | string | Номер телефона |
-| `threads[].thread_id` | string | Уникальный идентификатор диалога |
+| `threads[].thread_id` | string | Идентификатор диалога вида `thread_<uuid>`. Один и тот же во всех интерфейсах Pleep: ссылка в мониторе, входящие и исходящие вебхуки, автоподстановка Custom Tool |
 | `threads[].created_at` | string | Дата создания диалога (ISO 8601) |
 | `threads[].updated_at` | string | Дата последней активности (ISO 8601) |
 | `threads[].message_handler` | string | Кто обрабатывает диалог: `AI` или `OPERATOR` |
+| `threads[].lead_status` | object \| null | Текущий этап воронки. `null`, если этап ещё не присвоен |
+| `threads[].lead_status.id` | string | Идентификатор этапа, его же принимает [`set-status`](/ru/api/leads) |
+| `threads[].lead_status.name` | string | Название этапа, как в воронке |
+| `threads[].lead_status.kind` | string | Тип этапа: `active`, `qualified`, `awaiting_payment`, `success` или `failure` |
+| `threads[].lead_status.order` | integer | Позиция этапа в воронке |
 | `threads[].messages` | array | Массив сообщений в хронологическом порядке |
 | `threads[].messages[].id` | string | Идентификатор сообщения |
 | `threads[].messages[].role` | string | Роль отправителя: `AI`, `USER` или `OPERATOR` |
@@ -102,7 +111,7 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
 | `threads[].messages[].created_at` | string | Дата отправки (ISO 8601) |
 | `not_found` | string[] | Номера, для которых диалог не найден (только при запросе по `phones`) |
 | `has_more` | boolean | `true`, если есть ещё страницы |
-| `next_cursor` | string | Курсор для получения следующей страницы |
+| `next_cursor` | string \| null | Курсор следующей страницы: `thread_id` последнего диалога в текущей. `null`, если страниц больше нет |
 
 ### По номерам телефонов — успех
 
@@ -113,10 +122,16 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
     "threads": [
       {
         "phone": "+77001234567",
-        "thread_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "thread_id": "thread_a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "created_at": "2026-03-01T10:30:00Z",
         "updated_at": "2026-03-01T10:45:00Z",
         "message_handler": "AI",
+        "lead_status": {
+          "id": "7f3a1c20-1111-2222-3333-444455556666",
+          "name": "Предложение отправлено",
+          "kind": "active",
+          "order": 4
+        },
         "messages": [
           {
             "id": "msg_001",
@@ -140,10 +155,16 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
       },
       {
         "phone": "+77009876543",
-        "thread_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "thread_id": "thread_b2c3d4e5-f6a7-8901-bcde-f12345678901",
         "created_at": "2026-03-01T11:00:00Z",
         "updated_at": "2026-03-01T11:20:00Z",
         "message_handler": "OPERATOR",
+        "lead_status": {
+          "id": "9c8b7a60-7777-8888-9999-000011112222",
+          "name": "Продажа",
+          "kind": "success",
+          "order": 10
+        },
         "messages": [
           {
             "id": "msg_004",
@@ -182,10 +203,11 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
     "threads": [
       {
         "phone": "+77001112233",
-        "thread_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+        "thread_id": "thread_c3d4e5f6-a7b8-9012-cdef-123456789012",
         "created_at": "2026-03-01T08:00:00Z",
         "updated_at": "2026-03-01T08:30:00Z",
         "message_handler": "AI",
+        "lead_status": null,
         "messages": [
           {
             "id": "msg_007",
@@ -198,7 +220,7 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
     ],
     "not_found": [],
     "has_more": true,
-    "next_cursor": "eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0wMVQwODowMDowMFoiLCJpZCI6ImMzZDRlNWY2In0="
+    "next_cursor": "thread_c3d4e5f6-a7b8-9012-cdef-123456789012"
   }
 }
 ```
@@ -211,7 +233,7 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
   "channel": "waba_coexistence",
   "created_after": "2026-03-01T00:00:00Z",
   "created_before": "2026-03-03T00:00:00Z",
-  "cursor": "eyJjcmVhdGVkX2F0IjoiMjAyNi0wMy0wMVQwODowMDowMFoiLCJpZCI6ImMzZDRlNWY2In0=",
+  "cursor": "thread_c3d4e5f6-a7b8-9012-cdef-123456789012",
   "limit": 50
 }
 ```

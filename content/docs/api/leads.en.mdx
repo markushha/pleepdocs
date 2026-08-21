@@ -1,0 +1,202 @@
+---
+title: Lead Stages
+description: Read and change a lead's stage in the Pleep funnel by conversation id
+---
+
+Read and change a lead's stage in the Pleep funnel by conversation id. Use it to keep the Pleep funnel in step with your own systems — for example, moving a lead to "Won" once payment clears on your side.
+
+<Callout title="Which identifier to send">
+  Everything here is keyed on `thread_id`, the `thread_<uuid>` value that [`get-threads`](/en/api/get-threads) returns, the monitor link carries, and the Custom Tool auto-fill injects.
+</Callout>
+
+## Endpoints
+
+```
+POST https://microservice.pleep.app/api/v1/leads/get-statuses
+POST https://microservice.pleep.app/api/v1/leads/get-lead
+POST https://microservice.pleep.app/api/v1/leads/set-status
+```
+
+## Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `X-API-Key` | Your API key | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+## Rate limits
+
+Lead stage endpoints allow **60 requests per minute** per API key. This is a separate budget: the rest of the API allows 30.
+
+## get-statuses
+
+Returns the whole funnel: stage ids and names. Call it once, store the mapping on your side, then work by `id`.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `assistant_id` | string | No | Only needed when the API key owns more than one agent. Omit it if you have one |
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/leads/get-statuses \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_your_key" \
+  -d '{}'
+```
+
+### Response
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `statuses[].id` | string | Stage id |
+| `statuses[].name` | string | Stage name |
+| `statuses[].kind` | string | Stage type: `active`, `qualified`, `awaiting_payment`, `success` or `failure` |
+| `statuses[].order` | integer | Position in the funnel |
+| `statuses[].description` | string \| null | When a lead belongs in this stage |
+| `statuses[].ai_enabled` | boolean | `false` when the AI agent does not reply to inbound messages in this stage |
+| `statuses[].ai_transition_locked` | boolean | `true` when the agent may not move a lead out of this stage |
+
+```json
+{
+  "ok": true,
+  "data": {
+    "assistant_id": "6cc47669-8659-40ad-9d4d-bf914323120d",
+    "statuses": [
+      {
+        "id": "1a2b3c4d-0000-1111-2222-333344445555",
+        "name": "New enquiry",
+        "kind": "active",
+        "order": 0,
+        "description": null,
+        "ai_enabled": true,
+        "ai_transition_locked": false
+      },
+      {
+        "id": "9c8b7a60-7777-8888-9999-000011112222",
+        "name": "Won",
+        "kind": "success",
+        "order": 10,
+        "description": "Payment confirmed",
+        "ai_enabled": false,
+        "ai_transition_locked": true
+      }
+    ]
+  }
+}
+```
+
+## get-lead
+
+The current stage of a single conversation.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `thread_id` | string | Yes | Conversation id, `thread_<uuid>` |
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/leads/get-lead \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_your_key" \
+  -d '{"thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5"}'
+```
+
+### Response
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `thread_id` | string | Conversation id |
+| `assistant_id` | string | Agent id |
+| `channel` | string | Conversation channel, e.g. `WABA_COEXISTENCE` |
+| `phone` | string \| null | Customer phone, when the channel has one |
+| `message_handler` | string | Who is handling the conversation: `AI` or `OPERATOR` |
+| `status` | object \| null | Current stage. `null` when no stage is set |
+| `status_set_at` | string \| null | When the stage was set (ISO 8601) |
+| `status_set_by` | string \| null | Who set it: `AI`, `OPERATOR_MANUAL`, `SCENARIO` or `SYSTEM` |
+
+```json
+{
+  "ok": true,
+  "data": {
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "assistant_id": "6cc47669-8659-40ad-9d4d-bf914323120d",
+    "channel": "WABA_COEXISTENCE",
+    "phone": "77051234567",
+    "message_handler": "AI",
+    "status": {
+      "id": "7f3a1c20-1111-2222-3333-444455556666",
+      "name": "Visit booked",
+      "kind": "active",
+      "order": 6
+    },
+    "status_set_at": "2026-08-20T10:00:00.000Z",
+    "status_set_by": "AI"
+  }
+}
+```
+
+<Callout title="Do not poll one at a time">
+  If you need stages for many conversations, do not loop over `get-lead`. [`get-threads`](/en/api/get-threads) returns `lead_status` alongside every conversation.
+</Callout>
+
+## set-status
+
+Moves a lead to a stage. It does exactly what an operator dragging the card does: the card moves live on every open board, and scenarios anchored on the stage start.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `thread_id` | string | Yes | Conversation id |
+| `status_id` | string \| null | One of the two | Stage id. Send `null` to clear the stage |
+| `status_name` | string | One of the two | Exact stage name, case-insensitive. Alternative to `status_id` |
+
+Send exactly one of `status_id` or `status_name`. Sending neither returns `422`: an absent field is not read as "clear the stage", so a bug in your code cannot silently wipe a lead's position in the funnel.
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/leads/set-status \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_your_key" \
+  -d '{
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "status_id": "9c8b7a60-7777-8888-9999-000011112222"
+  }'
+```
+
+### Response
+
+```json
+{
+  "ok": true,
+  "data": {
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "changed": true,
+    "status": {
+      "id": "9c8b7a60-7777-8888-9999-000011112222",
+      "name": "Won",
+      "kind": "success",
+      "order": 10
+    }
+  }
+}
+```
+
+When the lead is already in the target stage the response is `changed: false` and nothing happens: no history entry, no scenarios. Replaying the same request is safe.
+
+### Duplicate stage names
+
+When a funnel has several stages with the same name, `set-status` by `status_name` returns `422 STATUS_AMBIGUOUS` rather than picking one arbitrarily. Use `status_id` in that case.
+
+## Error codes
+
+| HTTP status | Error code | Description |
+|-------------|------------|-------------|
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 404 | `THREAD_NOT_FOUND` | No such conversation, or it belongs to another account |
+| 404 | `STATUS_NOT_FOUND` | No such stage in this agent's funnel |
+| 404 | `ASSISTANT_NOT_FOUND` | No such agent, or it belongs to another account |
+| 422 | `STATUS_AMBIGUOUS` | `status_name` matches several stages, use `status_id` |
+| 422 | `VALIDATION_ERROR` | Neither `status_id` nor `status_name` was sent, or both were |
+| 429 | `RATE_LIMITED` | Too many requests. Limit is 60 requests per minute per API key |

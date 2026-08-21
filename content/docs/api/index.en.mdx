@@ -1,21 +1,24 @@
 ---
 icon: Code
 title: Public API
-description: Pleep Public API v1 — send WhatsApp template messages programmatically and manage API keys
+description: Pleep Public API v1 — WhatsApp template messages, conversation exports, lead stages and outgoing webhooks
 ---
 
-The Pleep Public API lets you integrate Pleep's messaging capabilities into your own systems. You can send WhatsApp template messages to one or multiple recipients directly from your backend, CRM, or automation tools.
+The Pleep Public API connects Pleep to your own systems: send WhatsApp template messages, export conversations, read and change a lead's funnel stage, and receive events as they happen.
 
 ## What you can do with the API
 
 - **Send template messages** — trigger WhatsApp messages from your own systems without logging into the dashboard
 - **Batch sending** — send to multiple recipients in a single request
+- **Export conversations** — pull message history by phone or date range, with each lead's current stage
+- **Manage lead stages** — read and change a lead's funnel stage by conversation id
+- **Receive events** — outgoing webhooks instead of polling the API
 - **Support for both WABA channels** — works with WABA Coexistence (Meta Cloud API) and legacy WABA (GupShup)
 
 ## Getting started
 
 1. [Create an API key](/en/api/api-keys) in your personal cabinet
-2. Review the [Send Template Message](/en/api/send-template) endpoint documentation
+2. Pick your endpoint: [Send Template Message](/en/api/send-template), [Get Conversation Threads](/en/api/get-threads), [Lead Stages](/en/api/leads) or [Outgoing Webhooks](/en/api/webhooks-outgoing)
 3. Make your first API call
 
 <Callout title="API version">
@@ -24,7 +27,7 @@ The Pleep Public API lets you integrate Pleep's messaging capabilities into your
 
 ## Authentication
 
-All API requests require an API key passed in the `X-API-Key` header. You can create and manage API keys in your [personal cabinet → Developers](https://app.pleep.app/dashboard?cabinet=developers).
+All API requests require an API key passed in the `X-API-Key` header. You can create and manage API keys in your [personal cabinet → Developers](https://app.pleep.app/settings/developers).
 
 ```
 X-API-Key: your-api-key
@@ -36,7 +39,9 @@ X-API-Key: your-api-key
 
 ## Rate limits
 
-The API allows **30 requests per minute** per API key. If you exceed this limit, you will receive a `429` error with the `RATE_LIMITED` code. Wait and retry after a short delay.
+By default the API allows **30 requests per minute** per API key. [Lead stage](/en/api/leads) endpoints have their own budget of **60 requests per minute**. Exceeding either returns a `429` with the `RATE_LIMITED` code. Wait and retry after a short delay.
+
+Outgoing webhooks are not subject to this limit: there Pleep calls you, not the other way round.
 
 ## Base URL
 
