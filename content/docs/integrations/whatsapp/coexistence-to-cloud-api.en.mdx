@@ -1,0 +1,122 @@
+---
+title: How to move to full WhatsApp
+description: Why a number in coexistence mode loses some of your ad enquiries, and how to move it to a full connection
+---
+
+If you run ads that open a WhatsApp chat and your number is connected in coexistence mode, some of the enquiries you paid for never reach you. You pay for the click, the person taps your ad and writes to you. And no conversation appears in Pleep.
+
+This article explains why that happens, what changes after moving to a full connection, and how to request the move.
+
+## What coexistence mode is
+
+Coexistence mode works like this: the same number runs **simultaneously** in the WhatsApp Business app on your phone and in Pleep. That is why you did not have to delete anything when you connected. The number simply started working in two places at once.
+
+For ordinary conversations this is convenient. But the mode has limits, and they hit advertising hardest.
+
+## Why ad enquiries get lost
+
+### The first message arrives in two parts
+
+When someone taps your ad and lands in WhatsApp, their first message does not arrive in one piece. It arrives in two. First comes an empty placeholder, which WhatsApp itself marks as "message unavailable" because the text is not ready yet. A couple of seconds later the same message arrives again, this time with the real text and a note about which ad the person came from.
+
+On a coexistence number this does not always work cleanly. Sometimes the second, real part is lost and the agent never replies at all. We investigated one such case on 23 June 2026: the enquiry arrived from an ad, and the person never got an answer.
+
+<Callout type="warn" title="This is the most expensive kind of loss">
+  What you lose is exactly your hottest enquiries: the ones you already paid Meta for, from people contacting you for the first time. They wrote, got no reply, and went to a competitor.
+</Callout>
+
+### Your ad statistics become approximate
+
+The note about which ad a person came from does not always reach a coexistence number, and when it does it arrives incomplete. That is why Pleep marks such rows in your reports as approximate. It is a lower bound, not an exact number.
+
+In practice this means you cannot honestly work out which ad pays for itself and which does not.
+
+### The app's auto-greeting switches the agent off
+
+The WhatsApp Business app has its own auto-greeting. You can replace it, but you **cannot remove it**. That is a WhatsApp limitation. It fires on every new conversation, including immediately after someone arrives from an ad.
+
+To Pleep, that greeting looks like a human colleague stepping into the conversation, so the agent switches itself off for that chat. The customer writes, and nobody is left to answer.
+
+### Four times less throughput
+
+A number in coexistence mode has a fixed ceiling of 20 messages per second, [according to Meta's documentation](https://developers.facebook.com/documentation/business-messaging/whatsapp/throughput). A full connection starts at 80 by default and goes up to 1,000 at the higher tiers.
+
+For an ordinary flow of enquiries, 20 per second is plenty, and enquiries do not go missing because of it. This is not the main argument. But coexistence leaves you noticeably less headroom for peaks, such as the first minutes after an ad campaign goes live.
+
+### Some replies never arrive
+
+WhatsApp accepts your reply first and only reports a failure later, in a separate notification. If Meta has restricted your business account, replies stop getting through, while for a while they still look sent in the conversation.
+
+That is exactly how we lost five days for one client: 87 replies in a row never reached anyone, while the interface showed them as delivered. The owner only found out once the enquiries had gone cold.
+
+<Callout title="Pleep watches for this">
+  Pleep tracks these failures: undelivered replies are marked as undelivered, and the owner is notified about the problem. But the underlying cause has not gone away, and account restrictions on a coexistence number are still possible.
+</Callout>
+
+## How to tell if this applies to you
+
+Open the **Ads** section. If you see the finding "Some enquiries from ads may be getting lost", then some of your enquiries from ads are arriving on a number in coexistence mode. The finding itself shows how many enquiries and what share that is.
+
+The other way is to open **Integrations** and look at the WhatsApp card. It shows which mode the number is connected in.
+
+## What changes after the move
+
+The main thing to know: **your conversations, your number and your history all stay where they are.**
+
+The move does not create a new number and does not transfer you to a different account. Your number stays exactly the same, every conversation in Pleep keeps working, and nothing needs reconnecting.
+
+Exactly one thing changes:
+
+<Callout type="warn" title="The WhatsApp Business app will stop working with this number">
+  After the move the number leaves the app, and the app will be logged out. You will answer customers from Pleep instead: on a computer, or on your phone through a browser.
+</Callout>
+
+If you are used to answering customers straight from the app on your phone, this is the one real change to your day, and it is worth preparing for. Everything else looks the same as before.
+
+## What you do NOT lose
+
+This is the most common fear, and it is unfounded. The move does **not** lose:
+
+- **Conversation history**: every conversation stays in Pleep exactly as it is
+- **Your number**: it stays the same, you do not need to change it
+- **Your customers**: nobody needs to be written to again or warned
+- **Agent settings**: your sales script, knowledge base and working hours stay as they were
+- **Templates and broadcasts**: they keep working
+- **Connected integrations**: your CRM and everything else stays in place
+
+## How the move happens
+
+There is no "move" button in the interface, and there will not be one for now. The Pleep team performs the move by hand, one number at a time.
+
+<Callout title="Why by hand">
+  Meta has no documented procedure for moving a number from coexistence mode to a full connection. So rather than offering a button that does it automatically, we move numbers one at a time and check the result at every step.
+</Callout>
+
+To request a move, write to Pleep support: through the chat in the interface, on Telegram, or by email. Tell us which number you want moved.
+
+We do not quote timelines in advance: every number is looked at individually.
+
+### If the move does not succeed
+
+The procedure is designed to be safe. While the move is running the number keeps receiving messages, and reception is never switched off, not even for a minute. If the number cannot be moved, it stays in exactly the state it was in: the same coexistence mode, working the same way, with nothing broken.
+
+## How to prepare
+
+Before writing to support:
+
+1. **Decide who will answer from Pleep.** After the move, the app on the phone will stop working with this number
+2. **Warn your staff** if any of them answer customers from a phone
+3. **Check that you have access** to Pleep on a computer or through a browser on your phone
+4. **Make sure the account is healthy**: no restrictions from Meta, and a quality rating that is not red. How to check this is described in [Ban Protection](/en/integrations/whatsapp/avoiding-bans)
+
+## After the move
+
+Once the move is complete:
+
+1. Write to your own number from another phone and check that the agent replies
+2. Check in the **Ads** section that the finding "Some enquiries from ads may be getting lost" has disappeared
+3. Run a small ad campaign and see whether enquiries arrive intact
+
+<Callout title="Need help?">
+  Write to Pleep support through the chat in the interface, on [Telegram](https://t.me/pleep_app_bot), or at support@pleep.app. We will help you work it out and advise whether moving makes sense for you.
+</Callout>

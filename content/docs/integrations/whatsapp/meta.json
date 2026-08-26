@@ -1,4 +1,12 @@
 {
   "title": "WhatsApp",
-  "pages": ["prerequisites", "connection-guide", "business-profile", "avoiding-bans", "verification", "faq"]
+  "pages": [
+    "prerequisites",
+    "connection-guide",
+    "business-profile",
+    "coexistence-to-cloud-api",
+    "avoiding-bans",
+    "verification",
+    "faq"
+  ]
 }
