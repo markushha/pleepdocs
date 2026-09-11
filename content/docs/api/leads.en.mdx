@@ -1,9 +1,9 @@
 ---
-title: Lead Stages
-description: Read and change a lead's stage in the Pleep funnel by conversation id
+title: Leads
+description: A lead's stage in the Pleep funnel, and turning the AI agent on or off in a single conversation
 ---
 
-Read and change a lead's stage in the Pleep funnel by conversation id. Use it to keep the Pleep funnel in step with your own systems — for example, moving a lead to "Won" once payment clears on your side.
+Work with a lead by conversation id: read and change its stage in the funnel, and turn the AI agent on or off in a single conversation. Use it to keep Pleep in step with your own systems — moving a lead to "Won" once payment clears on your side, or switching the agent off when a "do not process with AI" flag is raised on your lead card.
 
 <Callout title="Which identifier to send">
   Everything here is keyed on `thread_id`, the `thread_<uuid>` value that [`get-threads`](/en/api/get-threads) returns, the monitor link carries, and the Custom Tool auto-fill injects.
@@ -15,6 +15,7 @@ Read and change a lead's stage in the Pleep funnel by conversation id. Use it to
 POST https://microservice.pleep.app/api/v1/leads/get-statuses
 POST https://microservice.pleep.app/api/v1/leads/get-lead
 POST https://microservice.pleep.app/api/v1/leads/set-status
+POST https://microservice.pleep.app/api/v1/leads/set-ai
 ```
 
 ## Headers
@@ -152,6 +153,7 @@ Moves a lead to a stage. It does exactly what an operator dragging the card does
 | `thread_id` | string | Yes | Conversation id |
 | `status_id` | string \| null | One of the two | Stage id. Send `null` to clear the stage |
 | `status_name` | string | One of the two | Exact stage name, case-insensitive. Alternative to `status_id` |
+| `answer_pending_message` | boolean | No | Defaults to `false`. See "Answering a waiting message" below |
 
 Send exactly one of `status_id` or `status_name`. Sending neither returns `422`: an absent field is not read as "clear the stage", so a bug in your code cannot silently wipe a lead's position in the funnel.
 
@@ -185,9 +187,86 @@ curl -X POST https://microservice.pleep.app/api/v1/leads/set-status \
 
 When the lead is already in the target stage the response is `changed: false` and nothing happens: no history entry, no scenarios. Replaying the same request is safe.
 
+### Answering a waiting message
+
+A customer may already have written while the agent was not yet allowed near the lead — for example a stage that keeps the agent quiet until your own screening finishes. That message is stored but goes unanswered, and moving the lead to a permitting stage will not bring the agent back to it on its own: it waits for the customer to write again.
+
+Send `answer_pending_message: true` to have the agent answer that message as part of the move. The response carries `answered_pending_message`: `true` when a waiting message was found and the agent is answering it, `false` when there was nothing to answer.
+
+The field is optional and off by default on purpose: moving a stage must not unexpectedly send messages to customers. A bulk stage sync from your system will not write to a single customer without this flag.
+
+Nothing is sent when the agent is disallowed on the new stage (`ai_enabled: false`), when the stage is being cleared (`status_id: null`), when the last message in the conversation was not the customer's, or when that message is more than 24 hours old.
+
 ### Duplicate stage names
 
 When a funnel has several stages with the same name, `set-status` by `status_name` returns `422 STATUS_AMBIGUOUS` rather than picking one arbitrarily. Use `status_id` in that case.
+
+## set-ai
+
+Turns the AI agent on or off in a single conversation. This is the programmatic equivalent of the "Turn AI off permanently" switch on the conversation card in the monitor.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `thread_id` | string | Yes | Conversation id |
+| `ai_enabled` | boolean | Yes | `false` switches the agent off in this conversation, `true` switches it back on |
+
+`ai_enabled` must be a real JSON boolean. The string `"false"` returns `422` rather than switching the agent off: a string is truthy in JSON, and reading it as "on" would do the exact opposite of what was asked. An absent field also returns `422` rather than defaulting to off.
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/leads/set-ai \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_your_key" \
+  -d '{
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "ai_enabled": false
+  }'
+```
+
+### Response
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ai_enabled` | boolean | The state after the request |
+| `message_handler` | string | `AI` when the agent holds the conversation, `OPERATOR` when a human does |
+| `changed` | boolean | `false` when the state was already this |
+| `answered_pending_message` | boolean | The agent answered a message the customer sent while it was off |
+
+```json
+{
+  "ok": true,
+  "data": {
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "ai_enabled": false,
+    "message_handler": "OPERATOR",
+    "changed": true,
+    "answered_pending_message": false
+  }
+}
+```
+
+Replaying the same request is safe: when the state already matches you get `changed: false`, with no entry in the conversation history and no second wake-up for the agent.
+
+### Off stays off
+
+`ai_enabled: false` switches the agent off in this conversation for good. It is not brought back by the auto-return timer after an operator replies, by a CRM stage rule, or by moving the lead to another stage. The only things that switch it back on are `ai_enabled: true` and the switch in the monitor.
+
+### A reply already being written
+
+If the agent is mid-way through composing a reply when your request lands, two independent protections apply.
+
+First, the request aborts the generation where it stands. Second, in case the reply finished anyway, the system re-reads the conversation state immediately before sending and discards the reply if the agent is off by then.
+
+The only thing that can still reach the customer is a part of a reply already handed to the messenger before your request arrived.
+
+### Switching back on
+
+`ai_enabled: true` switches the agent on and immediately answers the message the customer sent while it was off, if there is one. `answered_pending_message` comes back `true` when the agent picked such a message up and `false` when there was nothing to answer. The same limits as `answer_pending_message` on `set-status` apply: nothing is sent when the last message was not the customer's, or when it is more than 24 hours old.
+
+<Callout type="warn" title="A customer who opted out">
+  When a customer has sent STOP and opted out of automated messages, the agent cannot be switched back on in that conversation: the call returns `422 THREAD_OPTED_OUT`. An opt-out is not cleared through the API.
+</Callout>
 
 ## Error codes
 
@@ -198,5 +277,6 @@ When a funnel has several stages with the same name, `set-status` by `status_nam
 | 404 | `STATUS_NOT_FOUND` | No such stage in this agent's funnel |
 | 404 | `ASSISTANT_NOT_FOUND` | No such agent, or it belongs to another account |
 | 422 | `STATUS_AMBIGUOUS` | `status_name` matches several stages, use `status_id` |
-| 422 | `VALIDATION_ERROR` | Neither `status_id` nor `status_name` was sent, or both were |
+| 422 | `VALIDATION_ERROR` | For `set-status`: neither `status_id` nor `status_name` was sent, or both were. For `set-ai`: `ai_enabled` is missing or is not a boolean |
+| 422 | `THREAD_OPTED_OUT` | The customer opted out of automated messages, the agent cannot be switched back on |
 | 429 | `RATE_LIMITED` | Too many requests. Limit is 60 requests per minute per API key |
