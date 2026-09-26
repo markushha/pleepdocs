@@ -1,0 +1,140 @@
+---
+title: How to send a private reply to Instagram comments (comment to DM)
+description: Automatically DM people who comment on your Instagram posts and Reels with Pleep. Keyword triggers, public comment replies, buttons, lead magnets and handoff to the AI agent, using Meta's official private replies API.
+---
+
+Pleep can run a comment to DM rule: someone comments on your post or Reel, Pleep sends them a private message in Instagram Direct and, if you want, replies publicly under the comment. When the person taps a button in that message, the conversation opens and your AI agent takes it from there.
+
+The DM is sent through Meta's official comment private reply mechanism in the Instagram API (private replies). In Pleep the section is called **Comments to DMs**.
+
+## Requirements
+
+- Instagram is [connected to Pleep](/en/integrations/instagram/connection-guide) and the account switch is on.
+- The connection has comment permissions. If the Instagram settings show a **"New: comment replies"** banner, click **Reconnect**. Settings and conversations are preserved.
+- If the rule should run under one post only, have the post or Reel ID ready. You can copy it from Meta Business Suite.
+
+## Instagram rules you need to know
+
+These limits come from Meta and apply to every tool. According to [Meta's private replies documentation](https://developers.facebook.com/documentation/instagram-platform/private-replies/):
+
+- only **one** private message can be sent per comment;
+- it must be sent **within 7 days** of the comment;
+- follow-up messages can be sent **only if the person responds**, and within 24 hours of their response.
+
+That is why the first DM in Pleep carries buttons. A button tap counts as the customer's response and opens the 24-hour window for the second message and the AI agent's replies.
+
+## How to set up a rule
+
+<Steps>
+
+### Step 1. Create a rule
+
+1. Open **Integrations → Instagram**.
+2. Find the **Comments to DMs** section and click **New rule**.
+
+The draft is prefilled: the first DM, a "Send it to me" button, the second DM and a public reply. Everything is editable. What is left is choosing your trigger word.
+
+### Step 2. Choose where the rule runs
+
+In **Where it runs**:
+
+- if several accounts are connected, pick the **Instagram account**;
+- choose **Every post and reel** (everything already published and everything you publish later) or **One post or reel**;
+- for one post, paste the **Post or reel ID**. While the field is empty, the rule runs under every post.
+
+### Step 3. Set the trigger words
+
+In **Words in the comment**, choose a mode:
+
+- **Certain words.** Add up to 20 words. Pleep looks for the word anywhere inside the comment, upper or lower case. A short word can fire inside longer words, so coin your own, like GUIDE2026, and ask for it in your caption. Emoji have to match exactly.
+- **Every comment.** Every single comment gets the DM, even a one-word comment like "nice".
+
+Check your word in **Try it on a real comment**: paste a real comment and see whether the rule would fire.
+
+### Step 4. Set up the public comment reply
+
+In **Reply under the comment**, turn on **Reply publicly** so everyone scrolling by sees the answer. Add two or three versions: Pleep picks one at random. If Instagram blocks the public reply, the DM still goes out.
+
+### Step 5. Write the first DM
+
+In **First DM**, write the text sent right after the comment (up to 1000 characters). You can insert **Their name**, **Their comment** or **Post ID**.
+
+Ask people to tap the button in the text. People often copy the button name into a comment instead of tapping it.
+
+### Step 6. Add buttons
+
+In **Buttons on the first message**, add up to three buttons (button text up to 20 characters):
+
+- **Sends the lead magnet.** The tap sends a **Second DM** with what you promised. You can attach a **Lead magnet link** (starting with https://) and link button text. If the text is empty, the button says Open.
+- **Sends a reply.** The tap sends the text you wrote. The AI agent answers whatever the customer says next.
+
+A link cannot sit on the first message: Instagram does not report taps on link buttons, so the conversation would stop there. The link goes in the second DM.
+
+### Step 7. Choose when the AI agent writes
+
+For a lead magnet button, pick the pause after the second DM in **When the AI agent writes**: in a minute, in 10 minutes (default), in an hour or in 4 hours. You can only write for 24 hours after the tap, so a long pause can miss that window.
+
+Optionally, turn on **Require a follow** in **Ask them to follow first**. Pleep checks whether the person follows you and, if not, asks them to follow before sending the link. If Instagram does not let Pleep check, Pleep simply asks and takes their word for it.
+
+### Step 8. Decide when to create the CRM deal
+
+If amoCRM or Bitrix24 is connected to the agent, keep **Create after a reply in Direct** on in **CRM deal creation**. Comments and greetings then stay in Pleep, and CRM syncing starts after a Direct message or a reply button tap.
+
+### Step 9. Turn the rule on and save
+
+Check that the switch shows **Rule is on** and click **Save**.
+
+</Steps>
+
+## What happens after a comment
+
+1. Someone leaves a comment that matches the rule.
+2. Pleep sends them the first DM with buttons.
+3. If the public reply is on, Pleep replies under the comment.
+4. The person taps a button. The tap is saved in the conversation as their message, which opens the 24-hour window.
+5. Pleep sends the second DM or the button's reply.
+6. The AI agent takes over the conversation. It sees the comment, the first DM and the tap in the conversation history. See [How the AI agent replies in Instagram Direct](/en/integrations/instagram/ai-replies).
+
+The conversation appears in **Chats**.
+
+## Test before launch
+
+1. From a separate Instagram account, comment your word under a test post.
+2. Check that the first DM arrived. Look in the message requests folder too.
+3. Tap the button and check the second DM and the link.
+4. Leave a comment without the word: the rule should not fire.
+
+A second comment from the same person on the same rule within 24 hours does not get a new DM (see below). Use another account to test again.
+
+## Troubleshooting
+
+### The rule does not fire
+
+- The rule is paused. Turn it on and save.
+- The Instagram account switch is off. The section shows **"Account is switched off"**.
+- The word is not in the comment. Check it in **Try it on a real comment**.
+- The comment came from your own account. Pleep does not reply to your own comments.
+- Comment permissions are missing. Reconnect Instagram from the **"New: comment replies"** banner.
+
+### The rule matched, but no DM was sent
+
+Pleep does not send rule messages when an operator is handling the conversation with that person, when the conversation is blacklisted, or when AI replies are turned off for the current CRM stage.
+
+### One person got only one DM for several comments
+
+This is intended. Pleep sends at most one DM per comment and at most one DM to the same person per rule every 24 hours. The lead magnet is sent once per 24 hours, even if the button is tapped again.
+
+### The wrong rule fired
+
+When several rules cover a post, Pleep chooses this way: a rule for a specific post wins over a rule for every post, and a rule with words wins over an **Every comment** rule.
+
+### Buttons in customers' inboxes stopped working
+
+When a rule is paused or deleted, the buttons already sitting in customers' inboxes stop working: their taps get no reply. Removing a button shifts the buttons after it, so older taps also go unanswered.
+
+## See also
+
+- [How to connect Instagram to Pleep](/en/integrations/instagram/connection-guide)
+- [How the AI agent replies in Instagram Direct](/en/integrations/instagram/ai-replies)
+- Walkthrough with an example: [Instagram Comment-to-DM Automation: Set Up Replies and an AI Agent](https://pleep.app/blog/instagram-kommentarii-v-direct)
+- Feature overview: [Pleep for Instagram](https://pleep.app/features/instagram)
