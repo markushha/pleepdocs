@@ -2,6 +2,7 @@
   "title": "API",
   "pages": [
     "send-template",
+    "get-templates",
     "get-threads",
     "leads",
     "webhooks-outgoing",
