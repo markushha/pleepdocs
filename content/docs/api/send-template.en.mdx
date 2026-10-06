@@ -44,6 +44,8 @@ In the **Broadcasts** section, find the **My Templates** block. Select the templ
 
 ![Copying Template ID](/images/api/copy-template-id.png)
 
+You can also get the Template ID, language and variable count through the API: [List templates](/en/api/get-templates) returns every template of the number with its full text.
+
 ### Step 3. Find the Bot ID
 
 Go to **Integrations**, select your WhatsApp Business integration and click **Manage**. On the integration page, you'll see the **Bot ID** field — click the copy icon, and the Bot ID will be copied automatically.
@@ -188,12 +190,13 @@ The following request will return a `422` error. If the template has no variable
 | HTTP Status | Error Code | Description |
 |-------------|------------|-------------|
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
-| 403 | `FORBIDDEN` | API key does not have access to this bot |
-| 404 | `BOT_NOT_FOUND` | The specified `bot_id` does not exist |
-| 422 | `VALIDATION_ERROR` | Invalid request body (missing fields, wrong format, empty strings in params) |
+| 402 | `BILLING_ERROR` | The send cannot be paid for: top up the WhatsApp balance, add a card or finish the billing setup |
+| 403 | `ACCOUNT_RESTRICTED` | Meta has restricted the WhatsApp account; sending is temporarily impossible |
+| 404 | `BOT_NOT_FOUND` | No bot with this `bot_id` in the account that owns the API key. Check `bot_id`, `channel`, and that the key was created in the number owner's account (see [API keys](/en/api/api-keys)) |
+| 409 | `DELIVERY_UNCONFIRMED` | The provider may already have delivered and charged the message but did not confirm it. Do not resend it |
+| 422 | `VALIDATION_ERROR` | Invalid request body (missing fields, wrong format, empty strings in params, template not approved in that language, or a params count that does not match the variables) |
 | 429 | `QUOTA_EXCEEDED` | Monthly message quota has been reached |
 | 429 | `RATE_LIMITED` | Too many requests. Limit is 30 requests per minute per API key |
-| 502 | `BILLING_ERROR` | Payment issue on the messaging provider side |
 | 502 | `PROVIDER_ERROR` | Error from the WhatsApp provider (Meta or GupShup) |
 
 ### Error response format

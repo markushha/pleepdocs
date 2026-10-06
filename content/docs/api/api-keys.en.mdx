@@ -39,6 +39,14 @@ Click **Create API Key**, enter a name (e.g. "CRM integration"), and copy the ke
   The full API key is displayed only at the moment of creation. If you lose it, delete the old key and create a new one.
 </Callout>
 
+## What a key can access
+
+A key acts on behalf of the account it was created in: it sees that account's agents, WhatsApp numbers and conversations. A key is not tied to a single bot or agent. Create the key while signed in to the account that owns the agent and the number; that key works with every API method.
+
+<Callout title="A team member's key">
+  If a team member creates a key in their own profile, that key does not see the owner's numbers: send template, list templates and get threads answer `404 BOT_NOT_FOUND`. The [lead stage](/en/api/leads) methods do work with such a key when the team member has access to the agent's monitor: pass `thread_id`, and pass `assistant_id` when listing stages.
+</Callout>
+
 ## Viewing API keys
 
 All active API keys are displayed in the **Developers** section of your personal cabinet. Each entry shows the key name, a masked version of the key, creation date, and last used date.
