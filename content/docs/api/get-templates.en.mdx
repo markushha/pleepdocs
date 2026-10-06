@@ -1,0 +1,123 @@
+---
+title: List templates
+description: Get a WhatsApp number's templates with the full text, approval status and variable count through the Pleep API
+---
+
+Returns every template of one WhatsApp number: the full text with its `{{1}}`, `{{2}}` variables, the language, approval status, category, header, footer, buttons and the number of variables. Use it instead of keeping template texts by hand: show your managers a preview, and pass to [Send template](/en/api/send-template) exactly the values this method returns.
+
+## Endpoint
+
+```
+POST https://microservice.pleep.app/api/v1/messages/get-templates
+```
+
+## Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `X-API-Key` | Your API key | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `bot_id` | string | Yes | Bot ID, the same one you use for sending templates. Copy it from **Integrations → WhatsApp Business → Manage** |
+| `channel` | string | Yes | Channel: `waba_coexistence` or `waba` (Gupshup). See [Send template](/en/api/send-template) for how to pick it |
+| `status` | string | No | Return only templates in this status, for example `APPROVED`. Case-insensitive. Without it, templates in every status are returned |
+
+## Example request
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "status": "APPROVED"
+}
+```
+
+### curl
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/messages/get-templates \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key" \
+  -d '{"bot_id": "your-bot-id", "channel": "waba_coexistence", "status": "APPROVED"}'
+```
+
+## Response
+
+```json
+{
+  "ok": true,
+  "data": {
+    "templates": [
+      {
+        "template_id": "awake_after_weekend",
+        "name": "awake_after_weekend",
+        "language": "en_US",
+        "status": "APPROVED",
+        "category": "MARKETING",
+        "body": "Hi {{1}}, sorry we couldn't respond over the weekend. Your manager {{2}} will continue here.",
+        "header": { "format": "TEXT", "text": "Back on Monday" },
+        "footer": "Worrki team",
+        "buttons": [
+          { "type": "QUICK_REPLY", "text": "Stop promotions" }
+        ],
+        "params_count": 2
+      }
+    ]
+  }
+}
+```
+
+### Template fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `template_id` | string | Pass this value as `template_id` when you [send the template](/en/api/send-template) |
+| `name` | string | Template name. Same as `template_id` |
+| `language` | string | The language the template is approved in, such as `en_US` or `ru`. Pass it as `template_language` when sending. One name can be approved in several languages; each language is a separate entry |
+| `status` | string | Status at the provider: `APPROVED`, `PENDING`, `REJECTED`, `PAUSED`, `DISABLED` and others. Only `APPROVED` templates can be sent |
+| `category` | string | `MARKETING`, `UTILITY` or `AUTHENTICATION` |
+| `body` | string | Full template text with its `{{1}}`, `{{2}}` variables |
+| `header` | object or null | Header: `format` (`TEXT`, `IMAGE`, `VIDEO`, `DOCUMENT` or `LOCATION`) and `text` for a text header. `null` when there is no header |
+| `footer` | string or null | Footer text, or `null` |
+| `buttons` | array | Buttons: `type` (`QUICK_REPLY`, `URL`, `PHONE_NUMBER` and others), `text`, plus `url` or `phone_number` when present. Empty when there are no buttons |
+| `params_count` | integer | How many values to pass in each recipient's `params` when sending. A variable used twice in the text counts once |
+
+## Sending a template from the list
+
+1. Pick a template with status `APPROVED`.
+2. Pass its `template_id` and `language` as `template_id` and `template_language`.
+3. If `params_count` is above zero, give every recipient a `params` array of exactly that length: the first value fills `{{1}}`, the second fills `{{2}}`, and so on.
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "template_id": "awake_after_weekend",
+  "template_language": "en_US",
+  "to": { "phone": "+77001234567", "params": ["Anna", "Dan"] }
+}
+```
+
+<Callout title="Which templates the API can send">
+  Sending through the API fills variables in the text (`body`) only. A template with an image, video or document header, with a variable in the header, or with a variable in a button link cannot be sent through the API yet: send it as a broadcast from the dashboard. Named variables such as `{{first_name}}` are not filled by the API either; for those templates `params_count` is zero.
+</Callout>
+
+## How often to call it
+
+Each call reads the templates live from the provider (Meta or Gupshup), so status and text are current at the moment of the request. One call every few minutes is enough. The general API limit applies: **30 requests per minute** per API key.
+
+The response has no change date: WhatsApp does not provide one. To notice a change, compare `body` and `status` with what you stored.
+
+## Error codes
+
+| HTTP status | Error code | Description |
+|-------------|------------|-------------|
+| 401 | `UNAUTHORIZED` | The API key is missing or invalid |
+| 404 | `BOT_NOT_FOUND` | No bot with this `bot_id` in the account that owns the API key. Check `bot_id`, `channel`, and that the key was created in the number owner's account (see [API keys](/en/api/api-keys)) |
+| 422 | `VALIDATION_ERROR` | `bot_id` is missing, `channel` is invalid, or `status` is not a string |
+| 429 | `RATE_LIMITED` | Too many requests. The limit is 30 requests per minute per API key |
+| 502 | `PROVIDER_ERROR` | Meta or Gupshup did not return the templates, for example because access to the number was revoked. The reason is in `message` |

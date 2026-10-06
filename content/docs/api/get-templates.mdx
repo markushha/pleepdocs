@@ -1,0 +1,123 @@
+---
+title: Список шаблонов
+description: Получение шаблонов WhatsApp номера с полным текстом, статусом и числом переменных через API Pleep
+---
+
+Возвращает все шаблоны одного номера WhatsApp: полный текст с переменными `{{1}}`, `{{2}}`, язык, статус одобрения, категорию, заголовок, подвал, кнопки и число переменных. Метод нужен, чтобы не хранить тексты шаблонов у себя вручную: показывайте менеджеру превью и передавайте в [отправку шаблона](/ru/api/send-template) ровно те значения, которые вернул этот метод.
+
+## Эндпоинт
+
+```
+POST https://microservice.pleep.app/api/v1/messages/get-templates
+```
+
+## Заголовки
+
+| Заголовок | Значение | Обязательный |
+|-----------|----------|--------------|
+| `X-API-Key` | Ваш API-ключ | Да |
+| `Content-Type` | `application/json` | Да |
+
+## Тело запроса
+
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| `bot_id` | string | Да | ID бота. Тот же, что в отправке шаблона: скопируйте его в **Интеграции → WhatsApp Business → Управление** |
+| `channel` | string | Да | Канал: `waba_coexistence` или `waba` (Gupshup). Как выбрать канал, описано в [отправке шаблона](/ru/api/send-template#шаг-4-определите-канал) |
+| `status` | string | Нет | Вернуть только шаблоны с этим статусом, например `APPROVED`. Регистр не важен. Без поля вернутся шаблоны во всех статусах |
+
+## Пример запроса
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "status": "APPROVED"
+}
+```
+
+### curl
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/messages/get-templates \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: ваш-api-ключ" \
+  -d '{"bot_id": "your-bot-id", "channel": "waba_coexistence", "status": "APPROVED"}'
+```
+
+## Ответ
+
+```json
+{
+  "ok": true,
+  "data": {
+    "templates": [
+      {
+        "template_id": "awake_after_weekend",
+        "name": "awake_after_weekend",
+        "language": "en_US",
+        "status": "APPROVED",
+        "category": "MARKETING",
+        "body": "Hi {{1}}, sorry we couldn't respond over the weekend. Your manager {{2}} will continue here.",
+        "header": { "format": "TEXT", "text": "Back on Monday" },
+        "footer": "Worrki team",
+        "buttons": [
+          { "type": "QUICK_REPLY", "text": "Stop promotions" }
+        ],
+        "params_count": 2
+      }
+    ]
+  }
+}
+```
+
+### Поля шаблона
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `template_id` | string | Передайте это значение в поле `template_id` при [отправке шаблона](/ru/api/send-template) |
+| `name` | string | Название шаблона. Совпадает с `template_id` |
+| `language` | string | Язык, в котором шаблон одобрен, например `en_US` или `ru`. Передайте его в поле `template_language` при отправке. Шаблон с одним названием может быть одобрен на нескольких языках: тогда в списке будет по записи на каждый язык |
+| `status` | string | Статус шаблона у провайдера: `APPROVED`, `PENDING`, `REJECTED`, `PAUSED`, `DISABLED` и другие. Отправить можно только `APPROVED` |
+| `category` | string | `MARKETING`, `UTILITY` или `AUTHENTICATION` |
+| `body` | string | Полный текст шаблона с переменными `{{1}}`, `{{2}}` |
+| `header` | object или null | Заголовок: `format` (`TEXT`, `IMAGE`, `VIDEO`, `DOCUMENT` или `LOCATION`) и `text` для текстового заголовка. `null`, если заголовка нет |
+| `footer` | string или null | Текст подвала или `null` |
+| `buttons` | array | Кнопки: `type` (`QUICK_REPLY`, `URL`, `PHONE_NUMBER` и другие), `text`, а также `url` или `phone_number`, если они есть. Пустой массив, если кнопок нет |
+| `params_count` | integer | Сколько значений передавать в `params` для каждого получателя при отправке. Переменная, которая встречается в тексте дважды, считается один раз |
+
+## Как отправить шаблон из списка
+
+1. Возьмите шаблон со статусом `APPROVED`.
+2. Передайте `template_id` и `language` в поля `template_id` и `template_language`.
+3. Если `params_count` больше нуля, передайте для каждого получателя массив `params` ровно такой длины: первое значение подставится в `{{1}}`, второе в `{{2}}` и так далее.
+
+```json
+{
+  "bot_id": "your-bot-id",
+  "channel": "waba_coexistence",
+  "template_id": "awake_after_weekend",
+  "template_language": "en_US",
+  "to": { "phone": "+77001234567", "params": ["Anna", "Dan"] }
+}
+```
+
+<Callout title="Какие шаблоны можно отправить через API">
+  Отправка шаблона через API подставляет переменные только в текст (`body`). Шаблон с картинкой, видео или документом в заголовке, с переменной в заголовке или в ссылке кнопки через API пока не отправится: используйте для него рассылку в личном кабинете. Шаблоны с именованными переменными вида `{{first_name}}` API тоже не заполняет, для них `params_count` равен нулю.
+</Callout>
+
+## Как часто запрашивать
+
+Метод каждый раз читает шаблоны напрямую у провайдера (Meta или Gupshup), поэтому статус и текст всегда актуальны на момент запроса. Одного запроса раз в несколько минут достаточно. Действует общий лимит API: **30 запросов в минуту** на API-ключ.
+
+Даты изменения шаблона в ответе нет: WhatsApp её не отдаёт. Чтобы заметить изменение, сравнивайте `body` и `status` с сохранёнными у вас.
+
+## Коды ошибок
+
+| HTTP-статус | Код ошибки | Описание |
+|-------------|------------|----------|
+| 401 | `UNAUTHORIZED` | Отсутствует или недействителен API-ключ |
+| 404 | `BOT_NOT_FOUND` | Бота с таким `bot_id` нет в аккаунте, которому принадлежит API-ключ. Проверьте `bot_id`, `channel` и то, что ключ создан в аккаунте владельца номера (см. [API-ключи](/ru/api/api-keys)) |
+| 422 | `VALIDATION_ERROR` | Нет `bot_id`, неверный `channel` или `status` не строка |
+| 429 | `RATE_LIMITED` | Слишком много запросов. Лимит: 30 запросов в минуту на API-ключ |
+| 502 | `PROVIDER_ERROR` | Meta или Gupshup не отдали шаблоны, например из-за отозванного доступа к номеру. Причина в поле `message` |
