@@ -30,3 +30,15 @@ The AmoCRM integration allows your AI agent to automatically create leads, sync 
 ### Do operator responses trigger automations in AmoCRM?
 
 No, operator responses do not trigger automations in AmoCRM. Automations are only triggered by AI agent actions. This is intentional to avoid duplicate actions and unexpected triggers during manual conversation management.
+
+### How do I link a chat to the deal from my form if the customer writes from another number?
+
+Pleep normally finds the customer's AmoCRM card by phone number. If the customer writes on WhatsApp from a different number than the one in your form, or WhatsApp hides their number, the chat lands in a new deal in Unsorted and the AI agent does not see the form answers.
+
+To make the chat land in the deal from your form:
+
+1. Create a text field on AmoCRM deals named **Pleep Sync Tag**.
+2. When the form is submitted, write a short code for the application into that field, for example `#K7Q2`: a hash sign and 4 to 16 Latin letters or digits. Use a different code for every application.
+3. Put the same code into the first message that opens on WhatsApp after the form, for example `https://wa.me/<number>?text=Hi, I'm Anna %23K7Q2`. In a link, `#` is written as `%23`.
+
+When the first message of a chat contains such a code, Pleep looks for an open deal with that code in the Pleep Sync Tag field and links the chat to that deal's main contact. The chat appears in the deal from your form, and the AI agent sees its fields. Closed and deleted deals are ignored. If no deal has the code, Pleep looks up the card by phone number as usual.
