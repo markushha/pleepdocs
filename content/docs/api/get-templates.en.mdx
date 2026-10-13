@@ -108,7 +108,7 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-templates \
 
 ## How often to call it
 
-Each call reads the templates live from the provider (Meta or Gupshup), so status and text are current at the moment of the request. One call every few minutes is enough. The general API limit applies: **30 requests per minute** per API key.
+Each call reads the templates live from the provider (Meta or Gupshup), so status and text are current at the moment of the request. One call every few minutes is enough. This method has its own limit: **30 requests per minute** per API key.
 
 The response has no change date: WhatsApp does not provide one. To notice a change, compare `body` and `status` with what you stored.
 

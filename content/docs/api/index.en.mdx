@@ -40,7 +40,7 @@ X-API-Key: your-api-key
 
 ## Rate limits
 
-By default the API allows **30 requests per minute** per API key. [Lead stage](/en/api/leads) endpoints have their own budget of **60 requests per minute**. Exceeding either returns a `429` with the `RATE_LIMITED` code. Wait and retry after a short delay.
+By default each API method allows **120 requests per minute** per API key. [Lead stage](/en/api/leads) endpoints allow **240 requests per minute**, while [get-threads](/en/api/get-threads) and [get-templates](/en/api/get-templates) allow **30 requests per minute**. Exceeding a limit returns a `429` with the `RATE_LIMITED` code. Wait and retry after a short delay.
 
 Outgoing webhooks are not subject to this limit: there Pleep calls you, not the other way round.
 

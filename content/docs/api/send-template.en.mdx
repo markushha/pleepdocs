@@ -196,7 +196,7 @@ The following request will return a `422` error. If the template has no variable
 | 409 | `DELIVERY_UNCONFIRMED` | The provider may already have delivered and charged the message but did not confirm it. Do not resend it |
 | 422 | `VALIDATION_ERROR` | Invalid request body (missing fields, wrong format, empty strings in params, template not approved in that language, or a params count that does not match the variables) |
 | 429 | `QUOTA_EXCEEDED` | Monthly message quota has been reached |
-| 429 | `RATE_LIMITED` | Too many requests. Limit is 30 requests per minute per API key |
+| 429 | `RATE_LIMITED` | Too many requests. Limit is 120 requests per minute per API key |
 | 502 | `PROVIDER_ERROR` | Error from the WhatsApp provider (Meta or GupShup) |
 
 ### Error response format

@@ -27,7 +27,7 @@ POST https://microservice.pleep.app/api/v1/leads/set-ai
 
 ## Rate limits
 
-Lead stage endpoints allow **60 requests per minute** per API key. This is a separate budget: the rest of the API allows 30.
+Lead stage endpoints allow **240 requests per minute** per API key, counted separately for each endpoint.
 
 ## get-statuses
 
@@ -279,4 +279,4 @@ The only thing that can still reach the customer is a part of a reply already ha
 | 422 | `STATUS_AMBIGUOUS` | `status_name` matches several stages, use `status_id` |
 | 422 | `VALIDATION_ERROR` | For `set-status`: neither `status_id` nor `status_name` was sent, or both were. For `set-ai`: `ai_enabled` is missing or is not a boolean |
 | 422 | `THREAD_OPTED_OUT` | The customer opted out of automated messages, the agent cannot be switched back on |
-| 429 | `RATE_LIMITED` | Too many requests. Limit is 60 requests per minute per API key |
+| 429 | `RATE_LIMITED` | Too many requests. Limit is 240 requests per minute per API key |
