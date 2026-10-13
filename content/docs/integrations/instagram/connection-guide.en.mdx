@@ -1,117 +1,110 @@
 ---
-title: Connection Guide
-description: Step-by-step instructions for connecting Instagram Direct Messages to your Pleep AI agent
+title: How to connect Instagram to Pleep
+description: Step-by-step guide to connecting an Instagram professional account to a Pleep AI agent through the official Instagram API and Facebook Login. Requirements, permissions, verification and common errors.
 ---
 
-Follow this step-by-step guide to connect Instagram Direct Messages to your AI agent in Pleep. The entire process takes 5-10 minutes.
+Pleep connects to Instagram through Meta's official Instagram API (the Instagram Graph API with Facebook Login for Business). You never enter your Instagram password in Pleep: you sign in with your Facebook profile, select your Page and Instagram account, and approve the permissions. After that, your AI agent answers Instagram Direct messages, and the settings unlock [comment to DM replies](/en/integrations/instagram/comment-to-dm).
 
-<Callout type="warn" title="Before you begin">
-  Make sure you have completed all the [prerequisites](/docs/integrations/instagram/prerequisites): an Instagram Business account, a linked Facebook Page, admin access, and messaging access enabled.
-</Callout>
+Connecting takes a few minutes. We recommend doing it on a computer.
 
-## Step-by-step instructions
+## Requirements
+
+- **An Instagram professional account**: Business or Creator. Personal accounts do not work.
+- **Your company's Facebook Page**, linked to that Instagram account.
+- **A personal Facebook profile** that can manage that Page. You sign in with it in the Facebook window.
+- **Message access turned on in Instagram** (step 1 below).
+- **A free channel slot on your plan.** If you have reached the channel limit, Pleep offers to upgrade.
+
+## Permissions Pleep requests
+
+In the Facebook window you approve access to your account. Instagram Direct messaging needs these permissions:
+
+- `instagram_basic`
+- `instagram_manage_messages`
+- `pages_messaging`
+- `pages_manage_metadata`
+- `pages_show_list`
+
+Comment replies additionally need `instagram_manage_comments`. If your account was connected before comment replies existed, Pleep shows a "New: comment replies" banner with a **Reconnect** button.
+
+## Step-by-step
 
 <Steps>
 
-### Step 1. Switch Instagram to a Business account
+### Step 1. Turn on message access in Instagram
 
-If your account is already a Business account, skip this step.
+In the Instagram app, open **Settings → Messages and story replies → Connected tools → Allow access to messages** and turn the toggle on.
 
-1. Open the **Instagram** app on your phone
-2. Go to your **profile** (icon in the bottom right corner)
-3. Tap the **menu** (three lines) in the top right corner
-4. Select **Settings and privacy**
-5. Tap **Account type and tools**
-6. Select **Switch to Professional account**
-7. Choose the category that best describes your business
-8. Select the **Business** type
-9. Fill in the contact information and complete the setup
+Menu names differ between app versions. In some versions the toggle sits under **Message requests**.
 
-<Callout title="Note">
-  After switching to a Business account, it may take a few minutes before all features become available. If the next steps do not work, wait 5-10 minutes.
+<Callout type="warn" title="Without this setting the agent sees no messages">
+  Instagram accepts the connection but never sends your customers' messages to Pleep. The setting is per Instagram account, so turn it on for every account you connect.
 </Callout>
 
-### Step 2. Link Instagram to a Facebook Page
+### Step 2. Open Instagram in Pleep
 
-If Instagram is already linked to a Facebook Page, skip this step.
+1. Sign in to Pleep and select your AI agent.
+2. In the side menu, open **Integrations**.
+3. Select **Instagram**.
+4. Tick **"I turned on message access in Instagram"**. The sign-in button stays disabled until you do.
+5. Click **Login**.
 
-1. In Instagram, go to **Settings and privacy**
-2. Select **Business** or **Account**
-3. Tap **Linked accounts** or **Accounts Center**
-4. Select **Facebook** and log into your Facebook account
-5. Choose the Facebook Page you want to link to Instagram
-6. Confirm the link
+### Step 3. Complete the Facebook window
 
-If you do not have a Facebook Page yet, create one at facebook.com/pages/create and return to this step.
+1. Click **Continue as** followed by your name. If it is the wrong profile, choose **Log in to another account**.
+2. If a business selection appears, select the business that owns the Page and the Instagram account, then click **Continue**.
+3. On **Choose the Pages…**, select **Opt in to current Pages only**, tick the Page linked to your Instagram account, and click **Continue**.
+4. On **Choose the Instagram accounts…**, select **Opt in to current Instagram accounts only**, tick the correct @username, and click **Continue**.
+5. On **Review… access request**, check the selected accounts and click **Save**. Click **Got it** if it is shown.
 
-### Step 3. Enable messaging access in Instagram
+### Step 4. Finish in Pleep
 
-1. In Instagram, go to **Settings and privacy**
-2. Select **Messages and story replies**
-3. Tap **Message controls**
-4. Under **Connected tools**, enable **Allow access to messages**
+If you granted access to several accounts, Pleep shows **"Choose an Instagram account"**. Tick the accounts you want and click **Connect**.
 
-Without this setting, Pleep will not be able to receive and send messages on behalf of your account.
+When the connection succeeds, you see **"Bot successfully created"** and the account appears under **Connected accounts**.
 
-### Step 4. Connect Instagram in Pleep
+### Step 5. Check that it works
 
-1. Open the **Pleep** dashboard in your browser
-2. Navigate to **Integrations** in the side menu
-3. Find the **Instagram** card and click **Connect**
-4. Select the AI agent that will respond to Instagram messages
-
-### Step 5. Authorize through Facebook
-
-1. A Facebook authorization window will open
-2. Log into the Facebook account that is the **admin** of the page
-3. Select the **Facebook Page** you want to connect
-4. Select the **Instagram account** linked to that page
-5. Review the requested permissions and click **Allow**
-
-<Callout type="warn" title="All permissions are required">
-  Do not uncheck any permissions during authorization. If you deny even one permission, the integration will not work correctly. You will need to disconnect and reconnect Instagram.
-</Callout>
-
-### Step 6. Wait for automatic connection
-
-After authorization, Pleep will automatically:
-
-- Obtain an access token for your Instagram account
-- Set up automatic connection for receiving new messages
-- Verify the connection and check the status
-
-This process takes a few seconds. Once complete, the integration status will change to **Connected** (green indicator).
-
-### Step 7. Send a test message
-
-1. Open Instagram from **a different account** (or ask someone to help)
-2. Find your business account on Instagram
-3. Send a Direct message — for example, "Hi, tell me about your products"
-4. Verify that the AI agent **responded** to the message
-5. Check that the conversation appears in the **Chats** section of the Pleep dashboard
+1. From a different Instagram account, send a new Direct message to the connected account.
+2. Open **Chats** in Pleep and check that the message is there.
+3. Check that the AI agent replied. Automatic replies need the AI to be turned on for that conversation.
 
 </Steps>
 
-## Troubleshooting
+## Settings after connecting
 
-### The Facebook authorization window does not appear
+- **Account switch** ("Integration enabled" / "Integration disabled"). While it is off, the agent does not process messages from this account and does not answer comments.
+- **Typing effect.** The customer sees "typing…" while the agent prepares a reply.
+- **Connect another account.** One agent can have several Instagram accounts within your plan. Broadcasts and scheduled messages always send from the primary account.
+- **Comments to DMs.** See [How to send a private reply to Instagram comments](/en/integrations/instagram/comment-to-dm).
 
-- Make sure pop-ups are not blocked in your browser
-- Try disabling ad-blocking extensions
-- Try a different browser
+## Common errors
 
-### The AI agent does not respond to the test message
+### "No Instagram business account found"
 
-- Check that the integration status in Pleep is **Connected**
-- Verify that you enabled messaging access in Instagram settings (Step 3)
-- Check that the AI agent is active and has a loaded knowledge base
-- Wait 1-2 minutes — sometimes the first message is processed with a slight delay
+Pleep did not find a professional Instagram account in your selection. Check that the account is Business or Creator and is linked to the Facebook Page you ticked. On your next sign-in, click **Edit previous settings** to change the selection.
 
-### "Insufficient permissions" error
+### "All available Instagram accounts are already connected"
 
-- Make sure you authorized through the Facebook account that is the page admin
-- Verify that you did not uncheck any permissions during authorization
+Every account you granted access to is already connected. To add another one, click **Edit previous settings** when signing in and tick it.
 
-<Callout title="Connection complete!">
-  Congratulations! Your AI agent now automatically responds to messages in Instagram Direct. All conversations are available in the **Chats** section of the Pleep dashboard.
-</Callout>
+### Messages do not show up in Pleep
+
+- Check message access in Instagram (step 1).
+- Check that the correct @username is connected.
+- Check that the account switch is on.
+
+### "Instagram got disconnected" banner
+
+Instagram revoked access, so the agent is not answering messages. Click **Reconnect**. Conversations and settings are preserved when you reconnect.
+
+### "You signed in to a different Instagram account"
+
+You picked the wrong account while reconnecting. Sign in again and choose the account that is connected in Pleep.
+
+## Next steps
+
+- [How to send a private reply to Instagram comments (comment to DM)](/en/integrations/instagram/comment-to-dm)
+- [How the AI agent replies in Instagram Direct](/en/integrations/instagram/ai-replies)
+- [Disconnecting Instagram](/en/integrations/instagram/disconnecting)
+- Feature overview: [Pleep for Instagram](https://pleep.app/features/instagram)
