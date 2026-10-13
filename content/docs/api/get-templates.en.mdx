@@ -108,7 +108,7 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-templates \
 
 ## How often to call it
 
-Each call reads the templates live from the provider (Meta or Gupshup), so status and text are current at the moment of the request. One call every few minutes is enough. This method has its own limit: **30 requests per minute** per API key.
+The method fetches templates from the provider (Meta or Gupshup) and keeps each number's list for one minute. A new template or a status change shows up within a minute, and repeated calls within that minute return the same list. Limit: **120 requests per minute** per API key.
 
 The response has no change date: WhatsApp does not provide one. To notice a change, compare `body` and `status` with what you stored.
 
@@ -119,5 +119,5 @@ The response has no change date: WhatsApp does not provide one. To notice a chan
 | 401 | `UNAUTHORIZED` | The API key is missing or invalid |
 | 404 | `BOT_NOT_FOUND` | No bot with this `bot_id` in the account that owns the API key. Check `bot_id`, `channel`, and that the key was created in the number owner's account (see [API keys](/en/api/api-keys)) |
 | 422 | `VALIDATION_ERROR` | `bot_id` is missing, `channel` is invalid, or `status` is not a string |
-| 429 | `RATE_LIMITED` | Too many requests. The limit is 30 requests per minute per API key |
+| 429 | `RATE_LIMITED` | Too many requests. The limit is 120 requests per minute per API key |
 | 502 | `PROVIDER_ERROR` | Meta or Gupshup did not return the templates, for example because access to the number was revoked. The reason is in `message` |
