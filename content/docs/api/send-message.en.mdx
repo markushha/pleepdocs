@@ -1,0 +1,78 @@
+---
+title: Send Message
+description: Send a plain text WhatsApp message to a customer as an operator via the Pleep API
+---
+
+Send a plain text message to a customer on WhatsApp from your own systems. The message goes out as an operator message, just like a manager's reply from the monitor: it appears in the conversation and in the monitor, reaches your connected CRM, and the AI agent pauses in that conversation.
+
+## Endpoint
+
+```
+POST https://microservice.pleep.app/api/v1/messages/send-message
+```
+
+## Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `X-API-Key` | Your API key | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+## When plain text is allowed
+
+WhatsApp delivers plain text only within 24 hours of the customer's last message. If the customer has been silent longer, or has never written to this number, start the conversation with a template through [Send Template Message](/en/api/send-template). Once the customer replies, plain text works again.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `bot_id` | string | Yes | Bot ID of the WhatsApp number. Step 3 of [Send Template Message](/en/api/send-template) shows where to find it |
+| `channel` | string | Yes | `waba_coexistence` or `waba` |
+| `phone` | string | Yes | Customer's number in international format, e.g. `+77001234567`. A plus, spaces and dashes are fine |
+| `text` | string | Yes | Message text, up to 4096 characters |
+
+## Example
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/messages/send-message \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_your_key" \
+  -d '{
+    "bot_id": "your-bot-id",
+    "channel": "waba_coexistence",
+    "phone": "+77001234567",
+    "text": "Hi! A reminder about our meeting tomorrow at 11:00."
+  }'
+```
+
+## Response
+
+```json
+{
+  "ok": true,
+  "data": {
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5"
+  }
+}
+```
+
+`thread_id` is the conversation the message went to. [Get Conversation Threads](/en/api/get-threads) returns the same identifier, and [set-ai](/en/api/leads) takes it.
+
+`ok: true` means the message was accepted and queued for sending, not that WhatsApp has already delivered it.
+
+## The AI agent after your message
+
+A message sent through the API counts as an operator reply. If "Pause AI when you reply yourself" is on in the [Auto-switch](/en/configuration/operator-settings) extension (it is on by default), the agent pauses in that conversation and stops answering the customer.
+
+To bring the agent back, call [set-ai](/en/api/leads) with `ai_enabled: true` or use the switch in the monitor. If "Turn AI back on when you're done" is also on in Auto-switch, the agent comes back by itself after the time set there.
+
+## Error codes
+
+| HTTP Status | Error Code | Description |
+|-------------|------------|-------------|
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 404 | `BOT_NOT_FOUND` | No bot with this `bot_id` in the account that owns the API key. Check `bot_id`, `channel`, and that the key was created in the account that owns the number (see [API Keys](/en/api/api-keys)) |
+| 404 | `THREAD_NOT_FOUND` | The customer with this phone has never written to this WhatsApp number. Start the conversation with a template |
+| 422 | `VALIDATION_ERROR` | Missing `bot_id`, `phone` or `text`, wrong `channel`, a phone that is not a number, or text longer than 4096 characters |
+| 422 | `WINDOW_CLOSED` | The customer's last message was more than 24 hours ago, or the customer has never written. Send a template |
+| 429 | `RATE_LIMITED` | Too many requests. The limit is 120 requests per minute per API key |

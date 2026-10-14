@@ -2,6 +2,7 @@
   "title": "API",
   "pages": [
     "send-template",
+    "send-message",
     "get-templates",
     "get-threads",
     "leads",
