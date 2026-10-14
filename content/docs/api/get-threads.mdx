@@ -246,7 +246,7 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/get-threads \
 | 403 | `FORBIDDEN` | API-ключ не имеет доступа к этому боту |
 | 404 | `BOT_NOT_FOUND` | Указанный `bot_id` не существует |
 | 422 | `VALIDATION_ERROR` | Некорректное тело запроса (не указаны `phones` или `created_after`, превышен лимит и т.д.) |
-| 429 | `RATE_LIMITED` | Слишком много запросов. Лимит — 30 запросов в минуту на API-ключ |
+| 429 | `RATE_LIMITED` | Слишком много запросов. Лимит: 120 запросов в минуту на API-ключ |
 
 ### Ошибка: не указаны фильтры
 
