@@ -1,4 +1,10 @@
 {
   "title": "Instagram",
-  "pages": ["prerequisites", "connection-guide", "disconnecting"]
+  "pages": [
+    "prerequisites",
+    "connection-guide",
+    "comment-to-dm",
+    "ai-replies",
+    "disconnecting"
+  ]
 }

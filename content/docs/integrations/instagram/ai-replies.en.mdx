@@ -1,0 +1,70 @@
+---
+title: How the AI agent replies in Instagram Direct
+description: How Pleep's AI agent answers Instagram Direct messages through Meta's official Instagram API. What the agent uses as knowledge, the 24-hour messaging window, handoff to a human operator and troubleshooting.
+---
+
+Once [Instagram is connected](/en/integrations/instagram/connection-guide), Pleep's AI agent replies to every new Instagram Direct message sent to the connected account. Messages come in and go out through Meta's official Instagram API. The reply is sent from the same account the customer wrote to, and the whole conversation is visible in **Chats**.
+
+## Requirements
+
+- Instagram is connected to Pleep and the account switch shows **"Integration enabled"**.
+- Message access for connected tools is turned on in Instagram.
+- The agent has instructions and a filled knowledge base.
+- The AI is turned on for the conversation.
+
+## What the agent uses to answer
+
+- **Agent instructions.** How the agent sells, what it asks and where it leads the customer.
+- **Knowledge base.** The agent searches the materials you added in **Knowledge Base**. See [Knowledge base](/en/knowledge-base).
+- **Conversation history.** The agent sees earlier messages. If the conversation started from a [comment to DM rule](/en/integrations/instagram/comment-to-dm), the history includes the comment, the first DM and the button tap.
+- **Your posts, by link.** When a customer sends a link to one of your posts, the agent reads its caption. Pleep looks the post up among up to 200 recent publications.
+- **Story replies and shared posts.** They are saved in the conversation together with the customer's message.
+
+## The 24-hour messaging window
+
+Under [Meta's Messenger Platform and IG Messaging API policy](https://developers.facebook.com/documentation/business-messaging/messenger-platform/policy), a business can respond to a user within 24 hours of the user's last message. The [Instagram API messaging documentation](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login/messaging-api) says the same: an app has 24 hours to respond to a message from an Instagram user.
+
+What this means in Pleep:
+
+- if more than 24 hours have passed since the customer's last message, Instagram rejects the message. This also applies to operator replies sent from Pleep;
+- when the customer writes again, the window opens again.
+
+Pleep does not use Meta message tags that extend this window.
+
+## Handoff to a human operator
+
+While an operator is handling a conversation, the AI does not reply in it. A conversation moves to a person in three ways.
+
+### The agent hands it off
+
+The agent can hand the conversation to an operator, for example when the customer asks for a person. The AI is turned off in that conversation, and you get a notification with a link to it.
+
+### You reply yourself from the Instagram app
+
+If you reply to a customer from the Instagram app, Pleep sees that message. With **"Pause AI when you reply yourself"** turned on, the AI pauses in that conversation. The setting is in **Extensions → Dialog Auto-switching**.
+
+In the same place you can turn on **"Turn AI back on when you're done (after specified time)"** and set after how many minutes the AI comes back.
+
+### You turn the AI off manually
+
+Open the conversation in **Chats** and click **Disable AI**. To bring the agent back, click **Enable AI**.
+
+## Reply settings
+
+- **Typing effect.** In **Integrations → Instagram → Settings**. The customer sees "typing…" while the agent prepares a reply.
+
+## Troubleshooting
+
+- **Messages do not appear in Chats.** Check message access in Instagram and the account switch. See [How to connect Instagram to Pleep](/en/integrations/instagram/connection-guide).
+- **An "Instagram got disconnected" banner is shown.** Click **Reconnect**. Conversations and settings are preserved.
+- **The message is in Chats but there is no reply.** Check whether the AI is on for that conversation. If the conversation was handed to an operator, turn the AI back on manually.
+- **The AI is off for a CRM stage.** If amoCRM or Bitrix24 is connected and the AI is not allowed to communicate at the deal's current stage, the agent does not reply in that conversation.
+- **More than 24 hours have passed.** Instagram will not accept a message until the customer writes again.
+- **Answers are inaccurate.** Add to the knowledge base and refine the agent's instructions.
+
+## See also
+
+- [How to connect Instagram to Pleep](/en/integrations/instagram/connection-guide)
+- [How to send a private reply to Instagram comments (comment to DM)](/en/integrations/instagram/comment-to-dm)
+- Comment to DM walkthrough: [Instagram Comment-to-DM Automation: Set Up Replies and an AI Agent](https://pleep.app/blog/instagram-kommentarii-v-direct)
+- Feature overview: [Pleep for Instagram](https://pleep.app/features/instagram)
