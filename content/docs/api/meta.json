@@ -3,6 +3,7 @@
   "pages": [
     "send-template",
     "send-message",
+    "make-call",
     "get-templates",
     "get-threads",
     "leads",
