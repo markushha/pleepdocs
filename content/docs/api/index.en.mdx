@@ -11,6 +11,7 @@ The Pleep Public API connects Pleep to your own systems: send WhatsApp template 
 - **Send template messages** — trigger WhatsApp messages from your own systems without logging into the dashboard
 - **Batch sending** — send to multiple recipients in a single request
 - **Write plain text to a customer** as an operator while WhatsApp's 24-hour window is open
+- **Call a customer with your voice agent** and learn whether they picked up
 - **List templates** — the full text, language, approval status and variable count of every template on a number
 - **Export conversations** — pull message history by phone or date range, with each lead's current stage
 - **Manage lead stages** — read and change a lead's funnel stage by conversation id
@@ -20,7 +21,7 @@ The Pleep Public API connects Pleep to your own systems: send WhatsApp template 
 ## Getting started
 
 1. [Create an API key](/en/api/api-keys) in your personal cabinet
-2. Pick your endpoint: [Send Template Message](/en/api/send-template), [Send Message](/en/api/send-message), [List Templates](/en/api/get-templates), [Get Conversation Threads](/en/api/get-threads), [Lead Stages](/en/api/leads) or [Outgoing Webhooks](/en/api/webhooks-outgoing)
+2. Pick your endpoint: [Send Template Message](/en/api/send-template), [Send Message](/en/api/send-message), [Voice Agent Call](/en/api/make-call), [List Templates](/en/api/get-templates), [Get Conversation Threads](/en/api/get-threads), [Lead Stages](/en/api/leads) or [Outgoing Webhooks](/en/api/webhooks-outgoing)
 3. Make your first API call
 
 <Callout title="API version">
@@ -41,7 +42,7 @@ X-API-Key: your-api-key
 
 ## Rate limits
 
-By default each API method allows **120 requests per minute** per API key. [Lead stage](/en/api/leads) endpoints allow **240 requests per minute**. Exceeding a limit returns a `429` with the `RATE_LIMITED` code. Wait and retry after a short delay.
+By default each API method allows **120 requests per minute** per API key. [Lead stage](/en/api/leads) endpoints allow **240 requests per minute**. The [voice agent call](/en/api/make-call) endpoint allows **60 requests per minute**. Exceeding a limit returns a `429` with the `RATE_LIMITED` code. Wait and retry after a short delay.
 
 Outgoing webhooks are not subject to this limit: there Pleep calls you, not the other way round.
 
