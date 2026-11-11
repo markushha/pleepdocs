@@ -3,7 +3,9 @@ title: Send Message
 description: Send plain text to a customer on WhatsApp, Instagram, Telegram or the website widget as an operator via the Pleep API
 ---
 
-Send a plain text message to a customer from your own systems: on WhatsApp, Instagram, Telegram or the website widget. The message goes out as an operator message, just like a manager's reply from the monitor: it appears in the conversation and in the monitor, reaches your connected CRM, and the AI agent pauses in that conversation.
+Send a plain text message to a customer from your own systems: on WhatsApp, Instagram, Telegram or the website widget. Any WhatsApp connection works: WhatsApp Business API, Wazzup or a QR code connection.
+
+The message goes out as an operator message, just like a manager's reply from the monitor: it is saved in the conversation, reaches your connected CRM, and the AI agent pauses in that conversation. In the monitor it is labelled "Your system · via API", so nobody mistakes it for a team member's reply.
 
 ## Endpoint
 
@@ -20,23 +22,31 @@ POST https://microservice.pleep.app/api/v1/messages/send-message
 
 ## Who to write to
 
-There are two ways to name the conversation:
+There are two ways to name the conversation, one per request:
 
-- **`thread_id`** works on every channel. It is the same conversation id used by [Lead Stages](/en/api/leads), the [`lead.status_changed`](/en/api/webhooks-outgoing) webhook, [Get Conversation Threads](/en/api/get-threads) and the conversation link in the monitor.
-- **`bot_id`, `channel` and `phone`** work for the WhatsApp Business API only: a phone number identifies a customer only on WhatsApp.
+- **`thread_id`** works on every channel. It is the same conversation id used by [Lead Stages](/en/api/leads), the [`lead.status_changed`](/en/api/webhooks-outgoing) webhook, [Get Conversation Threads](/en/api/get-threads) and [Voice Agent Call](/en/api/make-call). The message goes out on the channel the conversation runs on.
+- **`bot_id`, `channel` and `phone`** work for the WhatsApp Business API only. Pleep finds this WhatsApp number's conversation with the customer, and if there are several, writes to the one where the customer wrote last.
 
-The message goes into an existing conversation. On WhatsApp, a new conversation can only be started with a template through [Send Template Message](/en/api/send-template).
+The message only goes into an existing conversation. On the WhatsApp Business API, a new conversation can only be started with a template through [Send Template Message](/en/api/send-template).
 
 ## When you can write
 
 | Channel | When plain text can be sent |
 |---------|-----------------------------|
-| WhatsApp Business API (`waba_coexistence`, `waba`) | Within 24 hours of the customer's last message. After that, only a template through [Send Template Message](/en/api/send-template) |
+| WhatsApp Business API | Within 24 hours of the customer's last message. After that, only a template through [Send Template Message](/en/api/send-template) |
 | Instagram | Within 24 hours of the customer's last message. Instagram has no templates: wait for the customer to write again |
 | Personal Telegram account connected officially, through Telegram settings | Within 24 hours of the customer's last message |
-| Telegram bot, personal Telegram account with phone number login, WhatsApp through Green API or Wazzup, website widget | Any time |
+| WhatsApp through Wazzup, WhatsApp via QR code, Telegram bot, personal Telegram account with phone number login, website widget | Any time, even if the customer has not written yet |
 
-If the window is closed, nothing is sent and the API answers `422 WINDOW_CLOSED` right away. Phone conversations of a voice agent do not take text: they answer `422 CHANNEL_NOT_SUPPORTED`.
+If the window is closed, nothing is sent and the API answers `422 WINDOW_CLOSED` right away.
+
+Phone conversations of a voice agent do not take text: they answer `422 CHANNEL_NOT_SUPPORTED`. To write to such a customer, use their messenger conversation.
+
+## Who Pleep does not write to
+
+People who opted out of your agent's messages and calls: they replied "stop" to a broadcast or asked not to be called again during a call. The API answers `409 OUTREACH_SUPPRESSED`. An opt-out is stored by phone number, so it is checked in conversations that have one, that is on WhatsApp.
+
+If the AI is switched off for good in a conversation, the message still goes out: that switch leaves the conversation to people, and a message sent through the API counts as an operator reply.
 
 ## Request body
 
@@ -46,9 +56,11 @@ If the window is closed, nothing is sent and the API answers `422 WINDOW_CLOSED`
 | `bot_id` | string | Yes, unless `thread_id` is given | Bot ID of the WhatsApp number. Step 3 of [Send Template Message](/en/api/send-template) shows where to find it |
 | `channel` | string | Yes, unless `thread_id` is given | `waba_coexistence` or `waba` |
 | `phone` | string | Yes, unless `thread_id` is given | Customer's number in international format, e.g. `+77001234567`. A plus, spaces and dashes are fine |
-| `text` | string | Yes | Message text, up to 4096 characters. On Instagram up to 1000 bytes, about 500 Cyrillic letters |
+| `text` | string | Yes | Message text, up to 4096 characters |
 
-Pass one of `thread_id` or `phone`. If both arrive, the API answers `422`.
+Pass one of `thread_id` or `bot_id`, `channel` and `phone`. If both arrive, the API answers `422 VALIDATION_ERROR`.
+
+On Instagram, a long text reaches the customer as several messages of up to 1000 characters each.
 
 ## Examples
 
@@ -60,11 +72,11 @@ curl -X POST https://microservice.pleep.app/api/v1/messages/send-message \
   -H "X-API-Key: pk_live_your_key" \
   -d '{
     "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
-    "text": "Hi! Your order is ready for pickup."
+    "text": "Hi! You left a request with us. Is today a good time to talk?"
   }'
 ```
 
-### By phone number, WhatsApp
+### By phone number, WhatsApp Business API
 
 ```bash
 curl -X POST https://microservice.pleep.app/api/v1/messages/send-message \
@@ -107,7 +119,8 @@ To bring the agent back, call [set-ai](/en/api/leads) with `ai_enabled: true` or
 | 404 | `BOT_NOT_FOUND` | No bot with this `bot_id` in the account that owns the API key. Check `bot_id`, `channel`, and that the key was created in the account that owns the number (see [API Keys](/en/api/api-keys)) |
 | 404 | `THREAD_NOT_FOUND` | No conversation with this `thread_id` in the key's account, or the customer with this phone has never written to this WhatsApp number |
 | 409 | `CHANNEL_NOT_CONNECTED` | The channel of this conversation is no longer connected |
-| 422 | `VALIDATION_ERROR` | Missing `text`, no conversation named, both `thread_id` and `phone` given, wrong `channel`, a phone that is not a number, text longer than 4096 characters, or longer than 1000 bytes on Instagram |
-| 422 | `WINDOW_CLOSED` | On a channel with a 24-hour window, the customer last wrote more than 24 hours ago or has never written. On WhatsApp, send a template |
-| 422 | `CHANNEL_NOT_SUPPORTED` | A phone conversation of a voice agent: there is no chat to write text to |
+| 409 | `OUTREACH_SUPPRESSED` | The person opted out of your agent's messages and calls |
+| 422 | `VALIDATION_ERROR` | Missing `text`, no conversation named, both `thread_id` and `phone` given, wrong `channel`, a phone that is not a number, or text longer than 4096 characters |
+| 422 | `WINDOW_CLOSED` | On a channel with a 24-hour window, the customer last wrote more than 24 hours ago or has never written. On the WhatsApp Business API, send a template |
+| 422 | `CHANNEL_NOT_SUPPORTED` | A phone conversation of a voice agent: there is no chat to write text to. Old WhatsApp conversations through Green API answer the same, that channel is no longer supported |
 | 429 | `RATE_LIMITED` | Too many requests. The limit is 120 requests per minute per API key |
