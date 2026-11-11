@@ -178,7 +178,7 @@ Times in responses are always in UTC.
 | `scheduled` | Waiting for its time |
 | `calling` | The agent is dialling |
 | `done` | The call was made. See `call_status` for how it ended |
-| `cancelled` | Cancelled through the API, cancelled by the AI agent at the customer's request, or replaced by a new one |
+| `cancelled` | Cancelled through the API, cancelled by the AI agent at the customer's request, cancelled by hand in the monitor, or replaced by a new one |
 | `skipped` | Not made on purpose: the person opted out, the contact is blocked, the extension is off, the AI no longer works with the lead, a manager took the chat over or the deal is closed |
 | `failed` | The call couldn't be made |
 
@@ -187,6 +187,7 @@ Times in responses are always in UTC.
 | `REPLACED` | A new call to this lead was scheduled instead |
 | `CANCELLED_BY_API` | Cancelled with `cancel-scheduled-call` |
 | `CANCELLED_BY_AGENT` | The customer changed their mind in the conversation, and the AI agent cancelled the call. A call scheduled through the API is cancelled this way too |
+| `CANCELLED_IN_MONITOR` | Cancelled by hand in the monitor, with the "Cancel the call" button in the chat. A call scheduled through the API can be cancelled this way too |
 | `OUTSIDE_CALLING_HOURS` | Moved: the scheduled time turned out to be outside calling hours |
 | `CALL_IN_PROGRESS` | Moved 3 minutes on: the person was still talking to the agent. Seen on a call with status `scheduled` |
 | `OUTREACH_SUPPRESSED` | The person opted out of calls and messages |
