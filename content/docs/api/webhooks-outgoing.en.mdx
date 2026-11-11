@@ -201,11 +201,11 @@ The values match `call_status` in the [`make-call`](/en/api/make-call) response:
 
 | `source` | Who started the call |
 |----------|----------------------|
-| `api` | A [`make-call`](/en/api/make-call) request |
+| `api` | A [`make-call`](/en/api/make-call) request, including one scheduled for later with `scheduled_at` |
 | `scenario` | A "Call" action in a scenario |
 | `broadcast` | A broadcast, including one created through the API |
 | `inbound` | An incoming call |
-| `other` | Anything else, e.g. a call the AI agent placed from a chat |
+| `other` | Anything else, e.g. a call the AI agent placed from a chat or a call back it scheduled itself |
 
 <Callout title="Matching an event to a make-call request">
   The `make-call` response carries `thread_id`. The `call.completed` event for that call comes with the same `thread_id` and `source: "api"`. On Pleep telephony the `conversation_id` is only known once the call connects, so match on `thread_id`.
