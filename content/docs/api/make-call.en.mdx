@@ -1,0 +1,119 @@
+---
+title: Voice Agent Call
+description: Place an outbound call by the voice agent to a phone number via the Pleep API and learn whether anyone answered
+---
+
+Start one outbound call by your voice agent from your own systems. No WhatsApp conversation is needed, a phone number is enough. The response tells you the result: whether the person picked up.
+
+## Endpoint
+
+```
+POST https://microservice.pleep.app/api/v1/calls/make-call
+```
+
+## Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `X-API-Key` | Your API key | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+## Who to call
+
+- **`phone`**: the number in international format, for example `+77001234567`. A plus sign, spaces and dashes are fine. A Kazakhstan number can also start with 8: `87001234567`.
+- **`thread_id`**: a conversation id. Pleep takes the number from the conversation, and the call continues it: the agent sees the chat history, and the call transcript lands in the same conversation. It is the same id as in [lead stages](/en/api/leads) and [conversation threads](/en/api/get-threads).
+
+You can pass both: the agent calls `phone`, and the call continues conversation `thread_id`. If the conversation has no number, for example on Instagram or Telegram, pass `phone`.
+
+## Which agent calls
+
+If the account has one voice agent, you don't need to name it. With `thread_id`, the voice agent of the assistant that runs the conversation calls. If there are several voice agents, pass `voice_agent_id`: ask support for it.
+
+## When Pleep calls
+
+Only within the working hours set for the account. If working hours are off, from 9:00 to 21:00 in the account's time zone. Outside these hours the API doesn't call and returns `409 OUTSIDE_CALLING_HOURS` with an `opens_at` field: the time from which calling is allowed. Queue the call for that time on your side.
+
+Pleep doesn't call people who opted out of calls and messages, or contacts blocked in the monitor.
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `phone` | string | Yes, without `thread_id` | The number to call |
+| `thread_id` | string | Yes, without `phone` | The conversation the call continues, for example `thread_0765c2bd-980d-4c65-aeea-d04069646be5` |
+| `voice_agent_id` | string | If there are several voice agents | Which voice agent calls |
+| `assistant_id` | string | No | The voice agent of this assistant calls |
+| `first_message` | string | No | The agent's first line in this call, up to 2000 characters |
+| `extra_prompt` | string | No | Instructions for this call only, up to 20,000 characters. For example, what to ask |
+
+## Example
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/calls/make-call \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_your_key" \
+  -d '{
+    "phone": "+77001234567",
+    "extra_prompt": "The customer left a request on the website. Ask when it suits them to come by."
+  }'
+```
+
+## Response
+
+The request waits until the person picks up or the call ends. That usually takes up to 30 seconds, so set your HTTP client timeout to at least 60 seconds.
+
+```json
+{
+  "ok": true,
+  "data": {
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "conversation_id": "custom_convai_5d0c9e1a",
+    "call_status": "connected",
+    "answered": true,
+    "hangup_cause": null
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `thread_id` | The conversation where the call and its transcript are saved |
+| `conversation_id` | The call id |
+| `call_status` | How the call ended, values below |
+| `answered` | `true` if the person picked up, `false` if not, `null` if not known yet |
+| `hangup_cause` | The carrier's cause code when the call didn't connect. For example, `17` busy, `19` no answer |
+| `script_applied` | Present only if you sent `first_message` or `extra_prompt`: whether they reached the agent |
+
+| `call_status` | Meaning |
+|---------------|---------|
+| `connected` | The person picked up, the agent is talking |
+| `no_answer` | The person didn't pick up |
+| `busy` | Busy |
+| `rejected` | The person declined the call |
+| `not_connected` | The call couldn't connect, for example the number is out of service |
+| `network_error` | Carrier network failure |
+| `initiated` | The call was sent, the result is unknown |
+
+<Callout title="Don't retry blindly">
+  `504 CALL_RESULT_UNKNOWN` means the line didn't report a result in time. The call may have gone through, and a retry would call the person a second time. Check the conversation first with [conversation threads](/en/api/get-threads).
+</Callout>
+
+A call uses voice agent minutes the same way a scenario call does.
+
+## Error codes
+
+| HTTP status | Error code | Description |
+|-------------|------------|-------------|
+| 401 | `UNAUTHORIZED` | The API key is missing or invalid |
+| 402 | `VOICE_QUOTA_EXCEEDED` | Voice agent minutes ran out, or the subscription is inactive |
+| 404 | `THREAD_NOT_FOUND` | No conversation with this `thread_id` in the key's account |
+| 404 | `VOICE_AGENT_NOT_FOUND` | No such voice agent in the key's account |
+| 409 | `OUTSIDE_CALLING_HOURS` | Outside working hours. `opens_at` holds the time from which calling is allowed |
+| 409 | `OUTREACH_SUPPRESSED` | The person opted out of calls and messages, or the contact is blocked in the monitor |
+| 409 | `VOICE_AGENT_NOT_READY` | The voice agent can't call yet, for example no number is connected to it |
+| 422 | `NO_PHONE` | The conversation has no number. Pass `phone` |
+| 422 | `INVALID_PHONE` | `phone` doesn't look like a phone number |
+| 422 | `VALIDATION_ERROR` | Neither `phone` nor `thread_id`, a field that isn't a string or is too long, several voice agents without `voice_agent_id`, or a conversation of another assistant |
+| 429 | `RATE_LIMITED` | Too many requests. Limit: 60 requests per minute per API key |
+| 502 | `CALL_FAILED` | The call couldn't be placed. You can retry later |
+| 504 | `CALL_RESULT_UNKNOWN` | The result is unknown, the call may have gone through. Don't retry before checking the conversation |
