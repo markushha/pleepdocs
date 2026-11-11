@@ -36,9 +36,13 @@ The message only goes into an existing conversation. On the WhatsApp Business AP
 | WhatsApp Business API | Within 24 hours of the customer's last message. After that, only a template through [Send Template Message](/en/api/send-template) |
 | Instagram | Within 24 hours of the customer's last message. Instagram has no templates: wait for the customer to write again |
 | Personal Telegram account connected officially, through Telegram settings | Within 24 hours of the customer's last message |
+| WhatsApp Business API through Wazzup | Within 24 hours of the customer's last message. After that, only a template, sent from Wazzup |
+| Instagram through Wazzup | Within 7 days of the customer's last message. If the customer has not written yet, you cannot write |
 | WhatsApp through Wazzup, WhatsApp via QR code, Telegram bot, personal Telegram account with phone number login, website widget | Any time, even if the customer has not written yet |
 
 If the window is closed, nothing is sent and the API answers `422 WINDOW_CLOSED` right away.
+
+If the conversation's channel is switched off in Pleep or disconnected, nothing is sent either: the API answers `409 CHANNEL_NOT_CONNECTED`. Switch the channel on in its settings and send the request again.
 
 Phone conversations of a voice agent do not take text: they answer `422 CHANNEL_NOT_SUPPORTED`. To write to such a customer, use their messenger conversation.
 
@@ -118,9 +122,9 @@ To bring the agent back, call [set-ai](/en/api/leads) with `ai_enabled: true` or
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 404 | `BOT_NOT_FOUND` | No bot with this `bot_id` in the account that owns the API key. Check `bot_id`, `channel`, and that the key was created in the account that owns the number (see [API Keys](/en/api/api-keys)) |
 | 404 | `THREAD_NOT_FOUND` | No conversation with this `thread_id` in the key's account, or the customer with this phone has never written to this WhatsApp number |
-| 409 | `CHANNEL_NOT_CONNECTED` | The channel of this conversation is no longer connected |
+| 409 | `CHANNEL_NOT_CONNECTED` | The channel of this conversation is switched off in Pleep or no longer connected |
 | 409 | `OUTREACH_SUPPRESSED` | The person opted out of your agent's messages and calls |
 | 422 | `VALIDATION_ERROR` | Missing `text`, no conversation named, both `thread_id` and `phone` given, wrong `channel`, a phone that is not a number, or text longer than 4096 characters |
-| 422 | `WINDOW_CLOSED` | On a channel with a 24-hour window, the customer last wrote more than 24 hours ago or has never written. On the WhatsApp Business API, send a template |
+| 422 | `WINDOW_CLOSED` | On a channel with a window, the customer last wrote longer ago than it allows (24 hours, or 7 days on Instagram through Wazzup) or has never written. On the WhatsApp Business API, send a template |
 | 422 | `CHANNEL_NOT_SUPPORTED` | A phone conversation of a voice agent: there is no chat to write text to. Old WhatsApp conversations through Green API answer the same, that channel is no longer supported |
 | 429 | `RATE_LIMITED` | Too many requests. The limit is 120 requests per minute per API key |
