@@ -178,7 +178,7 @@ Times in responses are always in UTC.
 | `calling` | The agent is dialling |
 | `done` | The call was made. See `call_status` for how it ended |
 | `cancelled` | Cancelled through the API or replaced by a new one |
-| `skipped` | Not made on purpose: the person opted out, the contact is blocked or the extension is off |
+| `skipped` | Not made on purpose: the person opted out, the contact is blocked, the extension is off or the AI no longer works with the lead |
 | `failed` | The call couldn't be made |
 
 | `status_reason` | Meaning |
@@ -189,6 +189,8 @@ Times in responses are always in UTC.
 | `OUTREACH_SUPPRESSED` | The person opted out of calls and messages |
 | `CONTACT_BLOCKED` | The contact is blocked in the monitor |
 | `EXTENSION_OFF` | A call from the AI agent, and the "Scheduled calls" extension was turned off |
+| `LEAD_STATUS_AI_DISABLED` | A call from the AI agent, and the lead was moved to a funnel stage where the AI is off |
+| `LEAD_STATUS_REQUIRED` | A call from the AI agent, the lead has no funnel stage, and the AI works only with leads in stages |
 | `NO_CALLING_HOURS` | Working hours have no day open for calls |
 | `VOICE_QUOTA_EXCEEDED` | Voice agent minutes ran out, or the subscription is inactive |
 | `VOICE_AGENT_NOT_READY` | The voice agent can't call, for example no number is connected to it |
