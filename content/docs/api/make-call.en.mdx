@@ -95,7 +95,7 @@ The request waits until the person picks up or the call ends. That usually takes
 | `connected` | The person picked up, the agent is talking |
 | `no_answer` | The person didn't pick up |
 | `busy` | Busy |
-| `rejected` | The person declined the call |
+| `rejected` | The call was rejected (code `21`): the person declined it, or the network refused it and the phone may never have rung |
 | `not_connected` | The call couldn't connect, for example the number is out of service |
 | `network_error` | Carrier network failure |
 | `initiated` | The call was sent, the result is unknown |
