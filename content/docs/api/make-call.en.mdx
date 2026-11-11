@@ -110,10 +110,11 @@ A call uses voice agent minutes the same way a scenario call does.
 
 Pass `scheduled_at` to `make-call`. Pleep doesn't call right away: it stores the call and answers `202`. At that time the voice agent calls and continues the same conversation. If you passed only `phone`, Pleep finds the conversation by the number or creates a new one, and the monitor shows a line "Call scheduled for …" in it.
 
-- **The time** must carry a time zone offset: `+05:00` or `Z`. The API refuses a time without one.
+- **The time** must carry a time zone offset: `+05:00` or `Z`. The API refuses a time without one. It refuses an empty `scheduled_at` with `422` too: to call right away, leave the field out.
+- **The voice agent** must be able to call when you schedule. If no number is connected to it, the API answers `409 VOICE_AGENT_NOT_READY`, as for a call now.
 - **Calling hours** are the same as for a call now. The API refuses a time outside them with `409 OUTSIDE_CALLING_HOURS`, and `opens_at` holds the first allowed time after `scheduled_at`. A time in the past gets `422 SCHEDULED_AT_IN_PAST`.
 - **Right before the call** Pleep checks everything again: whether the person opted out, whether the contact is blocked, whether minutes are left, whether the voice agent is ready. If working hours changed since and the time is now outside them, the call moves to the next allowed time, and `moved_from` keeps the original one.
-- **One call per lead.** If the conversation already has a scheduled call, the API answers `409 SCHEDULED_CALL_EXISTS` and returns it in `scheduled_call`. To replace it, pass `"replace_scheduled": true`: the old one gets status `cancelled` with reason `REPLACED`.
+- **One call per lead.** If the conversation or this number already has a scheduled call (for example, the AI agent scheduled one in a chat with this number), the API answers `409 SCHEDULED_CALL_EXISTS` and returns it in `scheduled_call`. To replace it, pass `"replace_scheduled": true`: the old one gets status `cancelled` with reason `REPLACED`.
 
 The AI agent can also schedule calls itself when a customer asks to be called back. Turn on the "Scheduled calls" extension for that. These calls appear in the same list with `"source": "agent"` and replace each other the same way.
 
@@ -279,7 +280,7 @@ The response holds the call with status `cancelled` and reason `CANCELLED_BY_API
 | 422 | `NO_PHONE` | The conversation has no number. Pass `phone` |
 | 422 | `INVALID_PHONE` | `phone` doesn't look like a phone number |
 | 422 | `SCHEDULED_AT_IN_PAST` | `scheduled_at` has already passed |
-| 422 | `VALIDATION_ERROR` | Neither `phone` nor `thread_id`, a field that isn't a string or is too long, `scheduled_at` without a time zone offset, several voice agents without `voice_agent_id`, or a conversation of another assistant |
+| 422 | `VALIDATION_ERROR` | Neither `phone` nor `thread_id`, a field that isn't a string or is too long, `scheduled_at` empty or without a time zone offset, several voice agents without `voice_agent_id`, or a conversation of another assistant |
 | 429 | `RATE_LIMITED` | Too many requests. Limit: 60 requests per minute per API key |
 | 502 | `CALL_FAILED` | The call couldn't be placed. You can retry later |
 | 504 | `CALL_RESULT_UNKNOWN` | The result is unknown, the call may have gone through. Don't retry before checking the conversation |
