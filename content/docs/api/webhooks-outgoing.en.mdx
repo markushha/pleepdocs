@@ -175,8 +175,8 @@ A call nobody answered:
 | `direction` | string | `outbound`: the agent called. `inbound`: someone called the agent |
 | `status` | string | How the call ended, values below |
 | `duration_seconds` | number | Talk time in seconds. `0` when nobody picked up |
-| `started_at` | string | When dialling began (outbound) or the call came in (inbound), ISO 8601 UTC |
-| `ended_at` | string | When the call ended, ISO 8601 UTC |
+| `started_at` | string | When dialling began (outbound) or the agent answered (inbound), ISO 8601 UTC. For an outbound call with `source: "other"` it can be the moment the person picked up |
+| `ended_at` | string | When the call ended, ISO 8601 UTC. Accurate to about a second: it is the moment the end of the call reached Pleep |
 | `end_reason` | string \| null | What ended the call, when known, values below. `null` for a normal conversation: the line does not say who hung up |
 | `hangup_cause` | number \| null | Carrier cause code when the network ended the call, e.g. `17` busy, `19` no answer. Same codes as in `make-call` |
 | `transcript` | array | The conversation as the monitor shows it: lines `{ "role": "agent" \| "caller", "text": "..." }` in order. Empty when nobody picked up |
@@ -189,7 +189,7 @@ A call nobody answered:
 | `busy` | The line was busy |
 | `rejected` | The call was declined |
 | `voicemail` | An answering machine picked up and the agent hung up without speaking |
-| `failed` | The network could not connect the call |
+| `failed` | The network could not connect the call, or the phone line refused to dial it |
 
 The values match `call_status` in the [`make-call`](/en/api/make-call) response: `answered` is `connected` there, and `not_connected` and `network_error` arrive here as `failed`.
 
@@ -211,8 +211,12 @@ The values match `call_status` in the [`make-call`](/en/api/make-call) response:
   The `make-call` response carries `thread_id`. The `call.completed` event for that call comes with the same `thread_id` and `source: "api"`. On Pleep telephony the `conversation_id` is only known once the call connects, so match on `thread_id`.
 </Callout>
 
-<Callout type="warn" title="No call, no event">
+<Callout type="warn" title="When no event comes">
   When Pleep does not place a call at all (out of minutes, the person opted out, outside calling hours, the agent is not set up), there was no call and no `call.completed` is sent. `make-call` answers with an error right away, and broadcast results show the reason.
+
+  When the line does not report the result of the dial in time (`make-call` answers `504 CALL_RESULT_UNKNOWN`), the event comes only if the call connected.
+
+  If the agent's own phone number is connected the old way, through ElevenLabs, a call nobody picked up sends no event.
 </Callout>
 
 ## Verifying the signature
