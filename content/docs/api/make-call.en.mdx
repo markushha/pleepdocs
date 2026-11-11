@@ -114,9 +114,10 @@ Pass `scheduled_at` to `make-call`. Pleep doesn't call right away: it stores the
 - **The voice agent** must be able to call when you schedule. If no number is connected to it, the API answers `409 VOICE_AGENT_NOT_READY`, as for a call now.
 - **Calling hours** are the same as for a call now. The API refuses a time outside them with `409 OUTSIDE_CALLING_HOURS`, and `opens_at` holds the first allowed time after `scheduled_at`. A time in the past gets `422 SCHEDULED_AT_IN_PAST`.
 - **Right before the call** Pleep checks everything again: whether the person opted out, whether the contact is blocked, whether minutes are left, whether the voice agent is ready. If working hours changed since and the time is now outside them, the call moves to the next allowed time, and `moved_from` keeps the original one.
+- **If the person is still talking to the agent** (a call began in the last 35 minutes and has not ended), the call moves 3 minutes on with reason `CALL_IN_PROGRESS`, up to three times. `moved_from` does not change. After the third time the agent calls.
 - **One call per lead.** If the conversation or this number already has a scheduled call (for example, the AI agent scheduled one in a chat with this number), the API answers `409 SCHEDULED_CALL_EXISTS` and returns it in `scheduled_call`. To replace it, pass `"replace_scheduled": true`: the old one gets status `cancelled` with reason `REPLACED`.
 
-The AI agent can also schedule calls itself when a customer asks to be called back. Turn on the "Scheduled calls" extension for that. These calls appear in the same list with `"source": "agent"` and replace each other the same way.
+The AI agent can also schedule calls itself when a customer asks to be called back. Turn on the "Scheduled calls" extension for that. These calls appear in the same list with `"source": "agent"` and replace each other the same way. If the customer changes their mind, the agent cancels the call itself (reason `CANCELLED_BY_AGENT`). For a lead in a stage where the AI is off, the agent schedules no call and says a manager will get back to the customer.
 
 ```bash
 curl -X POST https://microservice.pleep.app/api/v1/calls/make-call \
@@ -177,20 +178,24 @@ Times in responses are always in UTC.
 | `scheduled` | Waiting for its time |
 | `calling` | The agent is dialling |
 | `done` | The call was made. See `call_status` for how it ended |
-| `cancelled` | Cancelled through the API or replaced by a new one |
-| `skipped` | Not made on purpose: the person opted out, the contact is blocked, the extension is off or the AI no longer works with the lead |
+| `cancelled` | Cancelled through the API, cancelled by the AI agent at the customer's request, or replaced by a new one |
+| `skipped` | Not made on purpose: the person opted out, the contact is blocked, the extension is off, the AI no longer works with the lead, a manager took the chat over or the deal is closed |
 | `failed` | The call couldn't be made |
 
 | `status_reason` | Meaning |
 |-----------------|---------|
 | `REPLACED` | A new call to this lead was scheduled instead |
 | `CANCELLED_BY_API` | Cancelled with `cancel-scheduled-call` |
+| `CANCELLED_BY_AGENT` | The customer changed their mind in the conversation, and the AI agent cancelled the call. A call scheduled through the API is cancelled this way too |
 | `OUTSIDE_CALLING_HOURS` | Moved: the scheduled time turned out to be outside calling hours |
+| `CALL_IN_PROGRESS` | Moved 3 minutes on: the person was still talking to the agent. Seen on a call with status `scheduled` |
 | `OUTREACH_SUPPRESSED` | The person opted out of calls and messages |
 | `CONTACT_BLOCKED` | The contact is blocked in the monitor |
 | `EXTENSION_OFF` | A call from the AI agent, and the "Scheduled calls" extension was turned off |
 | `LEAD_STATUS_AI_DISABLED` | A call from the AI agent, and the lead was moved to a funnel stage where the AI is off |
 | `LEAD_STATUS_REQUIRED` | A call from the AI agent, the lead has no funnel stage, and the AI works only with leads in stages |
+| `OPERATOR_MODE` | A call from the AI agent, and a manager took the chat over after it was scheduled |
+| `LEAD_CLOSED` | A call from the AI agent, and the lead was moved to a won or lost stage after it was scheduled |
 | `NO_CALLING_HOURS` | Working hours have no day open for calls |
 | `VOICE_QUOTA_EXCEEDED` | Voice agent minutes ran out, or the subscription is inactive |
 | `VOICE_AGENT_NOT_READY` | The voice agent can't call, for example no number is connected to it |
