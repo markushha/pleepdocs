@@ -1,14 +1,18 @@
 ---
 title: Voice Agent Call
-description: Place an outbound call by the voice agent to a phone number via the Pleep API and learn whether anyone answered
+description: Place an outbound call by the voice agent to a phone number via the Pleep API, now or at a set time, and learn whether anyone answered
 ---
 
 Start one outbound call by your voice agent from your own systems. No WhatsApp conversation is needed, a phone number is enough. The response tells you the result: whether the person picked up.
 
-## Endpoint
+You can also schedule a call for later, for example to call a customer back tomorrow at 11:00. See "Schedule a call" below.
+
+## Endpoints
 
 ```
 POST https://microservice.pleep.app/api/v1/calls/make-call
+GET  https://microservice.pleep.app/api/v1/calls/scheduled-calls
+POST https://microservice.pleep.app/api/v1/calls/cancel-scheduled-call
 ```
 
 ## Headers
@@ -31,7 +35,7 @@ If the account has one voice agent, you don't need to name it. With `thread_id`,
 
 ## When Pleep calls
 
-Only within the working hours set for the account. If working hours are off, from 9:00 to 21:00 in the account's time zone. Outside these hours the API doesn't call and returns `409 OUTSIDE_CALLING_HOURS` with an `opens_at` field: the time from which calling is allowed. Queue the call for that time on your side.
+Only within the working hours set for the account. If working hours are off, from 9:00 to 21:00 in the account's time zone. Outside these hours the API doesn't call and returns `409 OUTSIDE_CALLING_HOURS` with an `opens_at` field: the time from which calling is allowed. Schedule the call for that time: pass `scheduled_at`.
 
 Pleep doesn't call people who opted out of calls and messages, or contacts blocked in the monitor.
 
@@ -45,6 +49,8 @@ Pleep doesn't call people who opted out of calls and messages, or contacts block
 | `assistant_id` | string | No | The voice agent of this assistant calls |
 | `first_message` | string | No | The agent's first line in this call, up to 2000 characters |
 | `extra_prompt` | string | No | Instructions for this call only, up to 20,000 characters. For example, what to ask |
+| `scheduled_at` | string | No | Call at this time instead of now. ISO 8601 with a time zone offset, for example `2026-11-12T15:00:00+05:00` |
+| `replace_scheduled` | boolean | No | Only with `scheduled_at`: if the lead already has a scheduled call, cancel it and schedule this one |
 
 ## Example
 
@@ -89,7 +95,7 @@ The request waits until the person picks up or the call ends. That usually takes
 | `connected` | The person picked up, the agent is talking |
 | `no_answer` | The person didn't pick up |
 | `busy` | Busy |
-| `rejected` | The person declined the call |
+| `rejected` | The call was rejected (code `21`): the person declined it, or the network refused it and the phone may never have rung |
 | `not_connected` | The call couldn't connect, for example the number is out of service |
 | `network_error` | Carrier network failure |
 | `initiated` | The call was sent, the result is unknown |
@@ -100,6 +106,171 @@ The request waits until the person picks up or the call ends. That usually takes
 
 A call uses voice agent minutes the same way a scenario call does.
 
+## Schedule a call
+
+Pass `scheduled_at` to `make-call`. Pleep doesn't call right away: it stores the call and answers `202`. At that time the voice agent calls and continues the same conversation. If you passed only `phone`, Pleep finds the conversation by the number or creates a new one, and the monitor shows a line "Call scheduled for …" in it.
+
+- **The time** must carry a time zone offset: `+05:00` or `Z`. The API refuses a time without one. It refuses an empty `scheduled_at` with `422` too: to call right away, leave the field out.
+- **The voice agent** must be able to call when you schedule. If no number is connected to it, the API answers `409 VOICE_AGENT_NOT_READY`, as for a call now.
+- **Calling hours** are the same as for a call now. The API refuses a time outside them with `409 OUTSIDE_CALLING_HOURS`, and `opens_at` holds the first allowed time after `scheduled_at`. A time in the past gets `422 SCHEDULED_AT_IN_PAST`.
+- **Right before the call** Pleep checks everything again: whether the person opted out, whether the contact is blocked, whether minutes are left, whether the voice agent is ready. If working hours changed since and the time is now outside them, the call moves to the next allowed time, and `moved_from` keeps the original one.
+- **If the person is still talking to the agent** (a call began in the last 35 minutes and has not ended), the call moves 3 minutes on with reason `CALL_IN_PROGRESS`, up to three times. `moved_from` does not change. After the third time the agent calls.
+- **One call per lead.** If the conversation or this number already has a scheduled call (for example, the AI agent scheduled one in a chat with this number), the API answers `409 SCHEDULED_CALL_EXISTS` and returns it in `scheduled_call`. To replace it, pass `"replace_scheduled": true`: the old one gets status `cancelled` with reason `REPLACED`.
+
+The AI agent can also schedule calls itself when a customer asks to be called back. Turn on the "Scheduled calls" extension for that. These calls appear in the same list with `"source": "agent"` and replace each other the same way. If the customer changes their mind, the agent cancels the call itself (reason `CANCELLED_BY_AGENT`). For a lead in a stage where the AI is off, the agent schedules no call and says a manager will get back to the customer.
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/calls/make-call \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_your_key" \
+  -d '{
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "scheduled_at": "2026-11-12T11:00:00+05:00",
+    "extra_prompt": "The customer asked to be called back when free. Ask whether Friday suits them for a visit."
+  }'
+```
+
+Response `202`:
+
+```json
+{
+  "ok": true,
+  "data": {
+    "id": "6f1c2a8e-3b0d-4c8e-9a51-2f7d0e4b9c13",
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "phone": "77001234567",
+    "scheduled_at": "2026-11-12T06:00:00.000Z",
+    "status": "scheduled",
+    "status_reason": null,
+    "moved_from": null,
+    "source": "api",
+    "extra_prompt": "The customer asked to be called back when free. Ask whether Friday suits them for a visit.",
+    "first_message": null,
+    "call_status": null,
+    "conversation_id": null,
+    "created_at": "2026-11-11T09:20:00.000Z",
+    "finished_at": null,
+    "replaced_scheduled_call_id": null
+  }
+}
+```
+
+Times in responses are always in UTC.
+
+| Field | Description |
+|-------|-------------|
+| `id` | The scheduled call id, for cancelling |
+| `thread_id` | The conversation the call continues |
+| `phone` | The number the agent will call |
+| `scheduled_at` | When to call |
+| `status` | What is happening with the call now, values below |
+| `status_reason` | Why the call was cancelled, not made or moved, values below |
+| `moved_from` | The original time, if the call was moved because of calling hours |
+| `source` | `api`: scheduled through the API, `agent`: scheduled by the AI agent |
+| `extra_prompt`, `first_message` | Instructions for this call. For a call from the AI agent, `extra_prompt` holds its note on what the call is about |
+| `call_status` | Once the call is made: how it ended, as in the response to a call now |
+| `conversation_id` | The call id, once it is made |
+| `finished_at` | When the call was made, cancelled or not made |
+| `replaced_scheduled_call_id` | Only in the `make-call` response: the call this one replaced |
+
+| `status` | Meaning |
+|----------|---------|
+| `scheduled` | Waiting for its time |
+| `calling` | The agent is dialling |
+| `done` | The call was made. See `call_status` for how it ended |
+| `cancelled` | Cancelled through the API, cancelled by the AI agent at the customer's request, cancelled by hand in the monitor, or replaced by a new one |
+| `skipped` | Not made on purpose: the person opted out, the contact is blocked, the extension is off, the AI no longer works with the lead, a manager took the chat over or the deal is closed |
+| `failed` | The call couldn't be made |
+
+| `status_reason` | Meaning |
+|-----------------|---------|
+| `REPLACED` | A new call to this lead was scheduled instead |
+| `CANCELLED_BY_API` | Cancelled with `cancel-scheduled-call` |
+| `CANCELLED_BY_AGENT` | The customer changed their mind in the conversation, and the AI agent cancelled the call. A call scheduled through the API is cancelled this way too |
+| `CANCELLED_IN_MONITOR` | Cancelled by hand in the monitor, with the "Cancel the call" button in the chat. A call scheduled through the API can be cancelled this way too |
+| `OUTSIDE_CALLING_HOURS` | Moved: the scheduled time turned out to be outside calling hours |
+| `CALL_IN_PROGRESS` | Moved 3 minutes on: the person was still talking to the agent. Seen on a call with status `scheduled` |
+| `OUTREACH_SUPPRESSED` | The person opted out of calls and messages |
+| `CONTACT_BLOCKED` | The contact is blocked in the monitor |
+| `EXTENSION_OFF` | A call from the AI agent, and the "Scheduled calls" extension was turned off |
+| `LEAD_STATUS_AI_DISABLED` | A call from the AI agent, and the lead was moved to a funnel stage where the AI is off |
+| `LEAD_STATUS_REQUIRED` | A call from the AI agent, the lead has no funnel stage, and the AI works only with leads in stages |
+| `OPERATOR_MODE` | A call from the AI agent, and a manager took the chat over after it was scheduled |
+| `LEAD_CLOSED` | A call from the AI agent, and the lead was moved to a won or lost stage after it was scheduled |
+| `NO_CALLING_HOURS` | Working hours have no day open for calls |
+| `VOICE_QUOTA_EXCEEDED` | Voice agent minutes ran out, or the subscription is inactive |
+| `VOICE_AGENT_NOT_READY` | The voice agent can't call, for example no number is connected to it |
+| `CALL_FAILED` | The call couldn't be placed |
+| `CALL_RESULT_UNKNOWN` | The line didn't report a result in time, the call may have gone through |
+| `INTERRUPTED` | The call broke off while dialling. Pleep doesn't call again, so the person is never called twice |
+
+## List scheduled calls
+
+```
+GET https://microservice.pleep.app/api/v1/calls/scheduled-calls
+```
+
+All calls of the account, scheduled through the API and by the AI agent, newest first.
+
+| Parameter | Description |
+|-----------|-------------|
+| `thread_id` | Only calls of this conversation |
+| `status` | Only calls with this status, for example `scheduled` |
+| `limit` | How many calls to return, from 1 to 200. Default 100 |
+| `cursor` | `next_cursor` from the previous response, to get the next page |
+
+```bash
+curl "https://microservice.pleep.app/api/v1/calls/scheduled-calls?thread_id=thread_0765c2bd-980d-4c65-aeea-d04069646be5&status=scheduled" \
+  -H "X-API-Key: pk_live_your_key"
+```
+
+```json
+{
+  "ok": true,
+  "data": {
+    "scheduled_calls": [
+      {
+        "id": "6f1c2a8e-3b0d-4c8e-9a51-2f7d0e4b9c13",
+        "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+        "phone": "77001234567",
+        "scheduled_at": "2026-11-12T06:00:00.000Z",
+        "status": "scheduled",
+        "status_reason": null,
+        "moved_from": null,
+        "source": "agent",
+        "extra_prompt": "The customer asked for a call back tomorrow morning to confirm the visit time",
+        "first_message": null,
+        "call_status": null,
+        "conversation_id": null,
+        "created_at": "2026-11-11T09:20:00.000Z",
+        "finished_at": null
+      }
+    ],
+    "has_more": false,
+    "next_cursor": null
+  }
+}
+```
+
+## Cancel a scheduled call
+
+```
+POST https://microservice.pleep.app/api/v1/calls/cancel-scheduled-call
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `scheduled_call_id` | string | Yes | The scheduled call `id` |
+
+```bash
+curl -X POST https://microservice.pleep.app/api/v1/calls/cancel-scheduled-call \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_live_your_key" \
+  -d '{ "scheduled_call_id": "6f1c2a8e-3b0d-4c8e-9a51-2f7d0e4b9c13" }'
+```
+
+The response holds the call with status `cancelled` and reason `CANCELLED_BY_API`. Only a call with status `scheduled` can be cancelled. For a call that is already dialling or made, the API answers `409 SCHEDULED_CALL_NOT_CANCELLABLE` and returns it in `scheduled_call`.
+
 ## Error codes
 
 | HTTP status | Error code | Description |
@@ -108,12 +279,16 @@ A call uses voice agent minutes the same way a scenario call does.
 | 402 | `VOICE_QUOTA_EXCEEDED` | Voice agent minutes ran out, or the subscription is inactive |
 | 404 | `THREAD_NOT_FOUND` | No conversation with this `thread_id` in the key's account |
 | 404 | `VOICE_AGENT_NOT_FOUND` | No such voice agent in the key's account |
+| 404 | `SCHEDULED_CALL_NOT_FOUND` | No scheduled call with this `scheduled_call_id` in the key's account |
 | 409 | `OUTSIDE_CALLING_HOURS` | Outside working hours. `opens_at` holds the time from which calling is allowed |
 | 409 | `OUTREACH_SUPPRESSED` | The person opted out of calls and messages, or the contact is blocked in the monitor |
 | 409 | `VOICE_AGENT_NOT_READY` | The voice agent can't call yet, for example no number is connected to it |
+| 409 | `SCHEDULED_CALL_EXISTS` | The lead already has a scheduled call, it is in `scheduled_call`. Cancel it or pass `"replace_scheduled": true` |
+| 409 | `SCHEDULED_CALL_NOT_CANCELLABLE` | The call is already dialling, made or cancelled |
 | 422 | `NO_PHONE` | The conversation has no number. Pass `phone` |
 | 422 | `INVALID_PHONE` | `phone` doesn't look like a phone number |
-| 422 | `VALIDATION_ERROR` | Neither `phone` nor `thread_id`, a field that isn't a string or is too long, several voice agents without `voice_agent_id`, or a conversation of another assistant |
+| 422 | `SCHEDULED_AT_IN_PAST` | `scheduled_at` has already passed |
+| 422 | `VALIDATION_ERROR` | Neither `phone` nor `thread_id`, a field that isn't a string or is too long, `scheduled_at` empty or without a time zone offset, several voice agents without `voice_agent_id`, or a conversation of another assistant |
 | 429 | `RATE_LIMITED` | Too many requests. Limit: 60 requests per minute per API key |
 | 502 | `CALL_FAILED` | The call couldn't be placed. You can retry later |
 | 504 | `CALL_RESULT_UNKNOWN` | The result is unknown, the call may have gone through. Don't retry before checking the conversation |
