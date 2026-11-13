@@ -1,6 +1,6 @@
 ---
 title: Outgoing Webhooks
-description: Pleep calls your endpoint when a lead moves stage in the funnel or a deal moves stage in your CRM
+description: Pleep calls your endpoint when a lead moves stage in the funnel, a deal moves stage in your CRM or a voice agent call ends
 ---
 
 Outgoing webhooks let you stop polling the API and receive events as they happen. Pleep sends a `POST` with JSON to your HTTPS endpoint and signs every request.
@@ -21,6 +21,7 @@ The same section shows the last 20 delivery attempts with response code, body an
 |-------|---------------|
 | `lead.status_changed` | A lead moved to another stage of the Pleep funnel. Fires whoever moved it: the AI agent, an operator in the UI, a scenario, or a [`set-status`](/en/api/leads) call |
 | `crm.status_changed` | A deal or lead moved stage in an external CRM: amoCRM or Bitrix24 |
+| `call.completed` | A voice agent call ended, inbound or outbound. Also sent when nobody picked up |
 
 <Callout type="warn" title="crm.status_changed needs a connected external CRM">
   This event relays changes from amoCRM or Bitrix24. If you run your funnel inside Pleep and no external CRM is connected, it will never fire. Subscribe to `lead.status_changed` for the Pleep funnel.
@@ -101,6 +102,121 @@ Every event shares one envelope; the payload lives in `data`.
 
 <Callout title="thread_id can be null">
   A lead typed into the CRM by hand or imported from a spreadsheet has never written to you, so it has no conversation. That is expected, not an error: `thread_id` is `null` and `contact_phone` is the only handle on the person. Your handler must allow for it.
+</Callout>
+
+### call.completed
+
+Sent after every voice agent call. Outbound ones: from [`make-call`](/en/api/make-call), a scenario or a broadcast. And inbound ones. Over the phone and on WhatsApp. One event per call, including when nobody picked up, the line was busy or the call was declined.
+
+```json
+{
+  "id": "3b0e6f4a-2c1d-4e8f-9a7b-5c6d7e8f9012",
+  "event": "call.completed",
+  "occurred_at": "2026-11-08T10:01:12.000Z",
+  "application_id": "7dbbac93-00db-46a7-be99-9fc45d3a705d",
+  "data": {
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "assistant_id": "6cc47669-8659-40ad-9d4d-bf914323120d",
+    "voice_agent_id": "1e2d3c4b-5a69-4788-9a0b-c1d2e3f4a5b6",
+    "conversation_id": "custom_convai_5d0c9e1a",
+    "phone": "77051234567",
+    "direction": "outbound",
+    "status": "answered",
+    "duration_seconds": 47,
+    "started_at": "2026-11-08T10:00:15.000Z",
+    "ended_at": "2026-11-08T10:01:12.000Z",
+    "end_reason": null,
+    "hangup_cause": null,
+    "transcript": [
+      { "role": "agent", "text": "Hello! This is Maria from the English school. Is now a good time?" },
+      { "role": "caller", "text": "Yes, go ahead." },
+      { "role": "agent", "text": "You left a request for the course. When would you like to come for a trial lesson?" },
+      { "role": "caller", "text": "Saturday morning." }
+    ],
+    "source": "api"
+  }
+}
+```
+
+A call nobody answered:
+
+```json
+{
+  "id": "c41d2e5f-6a7b-4c8d-9e0f-1a2b3c4d5e6f",
+  "event": "call.completed",
+  "occurred_at": "2026-11-08T10:11:42.000Z",
+  "application_id": "7dbbac93-00db-46a7-be99-9fc45d3a705d",
+  "data": {
+    "thread_id": "thread_0765c2bd-980d-4c65-aeea-d04069646be5",
+    "assistant_id": "6cc47669-8659-40ad-9d4d-bf914323120d",
+    "voice_agent_id": "1e2d3c4b-5a69-4788-9a0b-c1d2e3f4a5b6",
+    "conversation_id": null,
+    "phone": "77051234567",
+    "direction": "outbound",
+    "status": "busy",
+    "duration_seconds": 0,
+    "started_at": "2026-11-08T10:11:31.000Z",
+    "ended_at": "2026-11-08T10:11:42.000Z",
+    "end_reason": "line_hangup",
+    "hangup_cause": 17,
+    "transcript": [],
+    "source": "broadcast"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `thread_id` | string | The conversation the call is saved in. Same id as in the [`make-call`](/en/api/make-call) response, in [`get-threads`](/en/api/get-threads) and in the monitor link |
+| `assistant_id` | string | The assistant that owns the voice agent |
+| `voice_agent_id` | string \| null | The voice agent that made or took the call. Same as `voice_agent_id` in `make-call` |
+| `conversation_id` | string \| null | Conversation id. `null` when the call never connected |
+| `phone` | string \| null | The other party's number, digits only, no `+` |
+| `direction` | string | `outbound`: the agent called. `inbound`: someone called the agent |
+| `status` | string | How the call ended, values below |
+| `duration_seconds` | number | Talk time in seconds. `0` when nobody picked up |
+| `started_at` | string | When dialling began (outbound) or the agent answered (inbound), ISO 8601 UTC. For an outbound call with `source: "other"` it can be the moment the person picked up |
+| `ended_at` | string | When the call ended, ISO 8601 UTC. Accurate to about a second: it is the moment the end of the call reached Pleep |
+| `end_reason` | string \| null | What ended the call, when known, values below. `null` for a normal conversation: the line does not say who hung up |
+| `hangup_cause` | number \| null | Carrier cause code when the network ended the call, e.g. `17` busy, `19` no answer. Same codes as in `make-call` |
+| `transcript` | array | The conversation as the monitor shows it: lines `{ "role": "agent" \| "caller", "text": "..." }` in order. Empty when nobody picked up |
+| `source` | string | Who started the call, values below |
+
+| `status` | Meaning |
+|----------|---------|
+| `answered` | The person picked up. A call dropped in the first seconds counts here too |
+| `no_answer` | It rang and nobody picked up |
+| `busy` | The line was busy |
+| `rejected` | The call was rejected. On WhatsApp it means the person declined it. On the phone line the network answers the same way when it refuses a call, and the phone may never have rung |
+| `voicemail` | An answering machine picked up and the agent hung up without speaking |
+| `failed` | The network could not connect the call, or the phone line refused to dial it |
+
+The values match `call_status` in the [`make-call`](/en/api/make-call) response: `answered` is `connected` there, and `not_connected` and `network_error` arrive here as `failed`.
+
+| `end_reason` | Meaning |
+|--------------|---------|
+| `voicemail` | The agent hung up on an answering machine |
+| `ring_timeout` | Nobody picked up while it rang |
+| `line_hangup` | The network ended the call before it connected, the code is in `hangup_cause` |
+
+| `source` | Who started the call |
+|----------|----------------------|
+| `api` | A [`make-call`](/en/api/make-call) request, including one scheduled for later with `scheduled_at` |
+| `scenario` | A "Call" action in a scenario |
+| `broadcast` | A broadcast, including one created through the API |
+| `inbound` | An incoming call |
+| `other` | Anything else, e.g. a call the AI agent placed from a chat or a call back it scheduled itself |
+
+<Callout title="Matching an event to a make-call request">
+  The `make-call` response carries `thread_id`. The `call.completed` event for that call comes with the same `thread_id` and `source: "api"`. On Pleep telephony the `conversation_id` is only known once the call connects, so match on `thread_id`.
+</Callout>
+
+<Callout type="warn" title="When no event comes">
+  When Pleep does not place a call at all (out of minutes, the person opted out, outside calling hours, the agent is not set up), there was no call and no `call.completed` is sent. `make-call` answers with an error right away, and broadcast results show the reason.
+
+  When the line does not report the result of the dial in time (`make-call` answers `504 CALL_RESULT_UNKNOWN`), the event comes only if the call connected.
+
+  If the agent's own phone number is connected the old way, through ElevenLabs, a call nobody picked up sends no event.
 </Callout>
 
 ## Verifying the signature
